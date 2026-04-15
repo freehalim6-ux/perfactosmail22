@@ -10,8 +10,8 @@
   "theme_color": "#1e3a5f",
   "description": "نظام إدارة عيادة الأسنان - إدارة المرضى والمواعيد والمدفوعات",
   "id": "perfacto-smile-clinic",
-  "lang": "ar"
-    "icons": [
+  "lang": "ar",
+  "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
