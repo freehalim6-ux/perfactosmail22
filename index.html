@@ -123,10 +123,10 @@
             <div class="tab" onclick="switchTab('completed')">✅ تم العلاج</div>
             <div class="tab" onclick="switchTab('all')">📋 الكل</div>
         </div>
-        <div id="tab-waiting" class="tab-content active"><div class="table-wrapper"><table><thead> pro(<th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th> </tr></thead><tbody id="waitingList"></tbody> </table></div></div>
-        <div id="tab-treatment" class="tab-content"><div class="table-wrapper"> <table><thead> <tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>وقت الدخول</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th> </tr></thead><tbody id="treatmentList"></tbody> </table></div></div>
-        <div id="tab-completed" class="tab-content"><div class="table-wrapper"> </table><thead> <tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>تاريخ العلاج</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th> </tr></thead><tbody id="completedList"></tbody> </table></div></div>
-        <div id="tab-all" class="tab-content"><div class="table-wrapper"> <table><thead> <tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الحالة</th><th>الإجراءات</th> </tr></thead><tbody id="allList"></tbody> </table></div></div>
+        <div id="tab-waiting" class="tab-content active"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th></tr></thead><tbody id="waitingList"></tbody></table></div></div>
+        <div id="tab-treatment" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>وقت الدخول</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th></tr></thead><tbody id="treatmentList"></tbody></table></div></div>
+        <div id="tab-completed" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>تاريخ العلاج</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th></tr></thead><tbody id="completedList"></tbody></table></div></div>
+        <div id="tab-all" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="allList"></tbody></table></div></div>
         <div class="btn-group"><button class="btn btn-success" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Excel</button><button class="btn btn-info" onclick="shareWhatsApp()"><i class="fab fa-whatsapp"></i> واتساب</button></div>
     </div>
 </div>
@@ -135,9 +135,7 @@
 
 <div id="loading" class="loading"><div class="spinner"></div><div style="color:white; margin-top:15px;">جاري التحميل...</div></div>
 
-<!-- Firebase SDK - كل شيء في ملف واحد -->
 <script type="module">
-    // استيراد Firebase
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
     import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
@@ -151,7 +149,6 @@
         appId: "1:763561733402:web:1ce9621bdc8924dff3d0a3"
     };
     
-    // تهيئة Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
@@ -163,7 +160,6 @@
     let searchDate = "";
     const STATUS = { WAITING: 'waiting', TREATMENT: 'treatment', COMPLETED: 'completed' };
     
-    // ============ دوال مساعدة ============
     function showToast(msg, isError = false) {
         const toast = document.createElement('div');
         toast.className = 'toast' + (isError ? ' error' : '');
@@ -173,12 +169,12 @@
     }
     
     function showLoading(show) {
-        document.getElementById('loading').style.display = show ? 'flex' : 'none';
+        const loadingEl = document.getElementById('loading');
+        if (loadingEl) loadingEl.style.display = show ? 'flex' : 'none';
     }
     
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
     
-    // ============ دوال تسجيل الدخول ============
     window.login = async function() {
         const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
@@ -191,7 +187,6 @@
             await signInWithEmailAndPassword(auth, email, password);
             document.getElementById('loginError').innerHTML = '';
         } catch (error) {
-            console.error(error);
             let msg = '❌ فشل تسجيل الدخول';
             if (error.code === 'auth/user-not-found') msg = '❌ المستخدم غير موجود';
             else if (error.code === 'auth/wrong-password') msg = '❌ كلمة السر غير صحيحة';
@@ -210,7 +205,6 @@
         showLoading(false);
     };
     
-    // ============ دوال البيانات ============
     async function loadPatients() {
         if (!db || !currentUser) return;
         showLoading(true);
@@ -357,7 +351,6 @@
         currentPatientId = null;
     };
     
-    // ============ دوال العرض ============
     function filterPatients() {
         searchText = document.getElementById('searchText').value.toLowerCase();
         searchDate = document.getElementById('searchDate').value;
@@ -382,11 +375,17 @@
     
     function renderAll() {
         const filtered = filterList(patients);
-        document.getElementById('waitingCount').innerText = patients.filter(p => p.status === STATUS.WAITING).length;
-        document.getElementById('treatmentCount').innerText = patients.filter(p => p.status === STATUS.TREATMENT).length;
-        document.getElementById('completedCount').innerText = patients.filter(p => p.status === STATUS.COMPLETED).length;
-        document.getElementById('totalCount').innerText = patients.length;
-        document.getElementById('totalMoney').innerText = patients.reduce((s, p) => s + (p.paid || 0), 0);
+        const waitingCount = document.getElementById('waitingCount');
+        const treatmentCount = document.getElementById('treatmentCount');
+        const completedCount = document.getElementById('completedCount');
+        const totalCount = document.getElementById('totalCount');
+        const totalMoney = document.getElementById('totalMoney');
+        
+        if (waitingCount) waitingCount.innerText = patients.filter(p => p.status === STATUS.WAITING).length;
+        if (treatmentCount) treatmentCount.innerText = patients.filter(p => p.status === STATUS.TREATMENT).length;
+        if (completedCount) completedCount.innerText = patients.filter(p => p.status === STATUS.COMPLETED).length;
+        if (totalCount) totalCount.innerText = patients.length;
+        if (totalMoney) totalMoney.innerText = patients.reduce((s, p) => s + (p.paid || 0), 0);
         
         renderList('waitingList', filtered.filter(p => p.status === STATUS.WAITING), 'waiting');
         renderList('treatmentList', filtered.filter(p => p.status === STATUS.TREATMENT), 'treatment');
@@ -395,6 +394,9 @@
     }
     
     function renderList(elementId, list, type) {
+        const element = document.getElementById(elementId);
+        if (!element) return;
+        
         const html = list.map(p => `
             <tr>
                 <td><b>${escapeHtml(p.name)}</b><br><small>${escapeHtml(p.service)}</small></td>
@@ -411,13 +413,20 @@
                     <button class="action-btn btn-info" onclick="openPaymentModal('${p.id}')">💰 دفع</button>
                     <button class="action-btn btn-danger" onclick="deletePatient('${p.id}')">🗑️</button>
                 </td>
-            </table>
+            </tr>
         `).join('');
-        document.getElementById(elementId).innerHTML = html || '<tr><td colspan="8">لا توجد بيانات</td></tr>';
+        element.innerHTML = html || '<tr><td colspan="8">لا توجد بيانات</td></tr>';
     }
     
     function renderAllList(list) {
-        const statusText = { waiting: '<span style="background:#fff3e0;color:#fd7e14;padding:4px 12px;border-radius:20px;">🕐 في الانتظار</span>', treatment: '<span style="background:#e0f0fc;color:#2c7da0;padding:4px 12px;border-radius:20px;">⚕️ قيد العلاج</span>', completed: '<span style="background:#d4edda;color:#28a745;padding:4px 12px;border-radius:20px;">✅ تم العلاج</span>' };
+        const element = document.getElementById('allList');
+        if (!element) return;
+        
+        const statusText = { 
+            waiting: '<span style="background:#fff3e0;color:#fd7e14;padding:4px 12px;border-radius:20px;">🕐 في الانتظار</span>', 
+            treatment: '<span style="background:#e0f0fc;color:#2c7da0;padding:4px 12px;border-radius:20px;">⚕️ قيد العلاج</span>', 
+            completed: '<span style="background:#d4edda;color:#28a745;padding:4px 12px;border-radius:20px;">✅ تم العلاج</span>' 
+        };
         const html = list.map(p => `
             <tr>
                 <td><b>${escapeHtml(p.name)}</b><br><small>${escapeHtml(p.service)}</small></td>
@@ -437,13 +446,14 @@
                 </td>
             </tr>
         `).join('');
-        document.getElementById('allList').innerHTML = html || '<tr><td colspan="9">لا توجد بيانات</td></tr>';
+        element.innerHTML = html || '<tr><td colspan="9">لا توجد بيانات</td></tr>';
     }
     
     window.switchTab = function(tab) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-        document.getElementById(`tab-${tab}`).classList.add('active');
+        const tabContent = document.getElementById(`tab-${tab}`);
+        if (tabContent) tabContent.classList.add('active');
         const map = { waiting: 0, treatment: 1, completed: 2, all: 3 };
         const tabs = document.querySelectorAll('.tab');
         if (tabs[map[tab]]) tabs[map[tab]].classList.add('active');
@@ -467,28 +477,35 @@
         showToast('📱 جاري فتح واتساب');
     };
     
-    // ============ الإعدادات الأولية ============
-    if (!document.getElementById('date').value) {
-        document.getElementById('date').value = new Date().toISOString().split('T')[0];
-        document.getElementById('time').value = '10:00';
-    }
+    // إعدادات أولية
+    const dateInput = document.getElementById('date');
+    const timeInput = document.getElementById('time');
+    if (dateInput && !dateInput.value) dateInput.value = new Date().toISOString().split('T')[0];
+    if (timeInput && !timeInput.value) timeInput.value = '10:00';
     
-    document.getElementById('searchText').addEventListener('keyup', filterPatients);
-    document.getElementById('searchDate').addEventListener('change', filterPatients);
+    const searchTextInput = document.getElementById('searchText');
+    const searchDateInput = document.getElementById('searchDate');
+    if (searchTextInput) searchTextInput.addEventListener('keyup', filterPatients);
+    if (searchDateInput) searchDateInput.addEventListener('change', filterPatients);
     
-    // ============ مراقبة حالة تسجيل الدخول ============
+    // مراقبة حالة تسجيل الدخول
     onAuthStateChanged(auth, async (user) => {
         console.log("Auth changed:", user ? "logged in" : "logged out");
         if (user) {
             currentUser = user;
-            document.getElementById('loginContainer').style.display = 'none';
-            document.getElementById('appContainer').style.display = 'block';
-            document.getElementById('userEmail').innerHTML = `<i class="fas fa-user"></i> ${user.email}`;
+            const loginContainer = document.getElementById('loginContainer');
+            const appContainer = document.getElementById('appContainer');
+            const userEmailSpan = document.getElementById('userEmail');
+            if (loginContainer) loginContainer.style.display = 'none';
+            if (appContainer) appContainer.style.display = 'block';
+            if (userEmailSpan) userEmailSpan.innerHTML = `<i class="fas fa-user"></i> ${user.email}`;
             await loadPatients();
         } else {
             currentUser = null;
-            document.getElementById('loginContainer').style.display = 'flex';
-            document.getElementById('appContainer').style.display = 'none';
+            const loginContainer = document.getElementById('loginContainer');
+            const appContainer = document.getElementById('appContainer');
+            if (loginContainer) loginContainer.style.display = 'flex';
+            if (appContainer) appContainer.style.display = 'none';
             patients = [];
         }
     });
