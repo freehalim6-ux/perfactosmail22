@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>Perfacto Smile - نظام إدارة العيادة</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Perfacto Smile">
+    <meta name="theme-color" content="#1e3a5f">
+    <meta name="description" content="نظام إدارة عيادة الأسنان Perfacto Smile">
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- مكتبة Excel -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    
+    <!-- مكتبة PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', 'Tahoma', 'Segoe UI', sans-serif;
+        }
+
+        /* شاشة تسجيل الدخول */
+        .login-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #0f2b3d 0%, #1a4a6f 100%);
+            z-index: 20000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .login-box {
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 40px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+            animation: fadeInUp 0.6s ease;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .login-box h2 {
+            color: #1e3a5f;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .login-box .clinic-name {
+            color: #2c7da0;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 15px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .login-box input:focus {
+            outline: none;
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44,125,160,0.2);
+        }
+
+        .login-box button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #2c7da0, #1e5a7a);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .login-box button:active { transform: scale(0.98); }
+        .login-error { color: #dc3545; margin-top: 10px; font-size: 14px; }
+
+        /* التطبيق الرئيسي */
+        body {
+            background: #f0f4f8;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: none;
+            max-width: 1400px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        /* الهيدر */
+        .header {
+            background: linear-gradient(135deg, #1e3a5f, #2c7da0);
+            border-radius: 25px;
+            padding: 20px 25px;
+            margin-bottom: 25px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .logo h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .logout-btn:hover { background: rgba(255,255,255,0.3); }
+
+        /* الإحصائيات */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover { transform: translateY(-5px); }
+        .stat-card i { font-size: 35px; margin-bottom: 10px; }
+        .stat-number { font-size: 32px; font-weight: bold; margin: 10px 0; }
+        .stat-label { color: #666; font-size: 13px; }
+
+        /* بطاقات */
+        .card {
+            background: white;
+            border-radius: 25px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e3a5f;
+            border-right: 4px solid #2c7da0;
+            padding-right: 12px;
+            margin-bottom: 20px;
+        }
+
+        /* نموذج الإضافة */
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #2c7da0;
+            box-shadow: 0 0 0 3px rgba(44,125,160,0.1);
+        }
+
+        /* أزرار */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: #2c7da0; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #fd7e14; color: white; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn-secondary { background: #6c757d; color: white; }
+        .btn-info { background: #17a2b8; color: white; }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+        }
+
+        /* البحث */
+        .search-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-bar input, .search-bar select {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        /* التبويبات */
+        .tabs {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 25px;
+            cursor: pointer;
+            border-radius: 12px 12px 0 0;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .tab.active {
+            background: #2c7da0;
+            color: white;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        /* الجداول */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        th, td {
+            padding: 12px 10px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            background: #f0f8fc;
+            color: #1e3a5f;
+            font-weight: bold;
+        }
+
+        tr:hover { background: #f8f9fa; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .status-waiting { background: #fff3e0; color: #fd7e14; }
+        .status-treatment { background: #e0f0fc; color: #2c7da0; }
+        .status-completed { background: #d4edda; color: #28a745; }
+
+        .payment-paid { background: #d4edda; color: #28a745; }
+        .payment-unpaid { background: #f8d7da; color: #dc3545; }
+
+        .action-btn {
+            padding: 5px 10px;
+            margin: 2px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            left: 20px;
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 12px;
+            text-align: center;
+            z-index: 9999;
+            animation: slideUp 0.3s ease;
+            max-width: 400px;
+            margin: auto;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 15000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #2c7da0;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .app-container { padding: 10px; }
+            .stats-grid { gap: 10px; }
+            .stat-number { font-size: 24px; }
+            th, td { font-size: 11px; padding: 8px 4px; }
+            .btn { padding: 8px 12px; font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- شاشة تسجيل الدخول -->
+<div id="loginContainer" class="login-container">
+    <div class="login-box">
+        <i class="fas fa-tooth" style="font-size: 50px; color: #2c7da0; margin-bottom: 15px;"></i>
+        <h2>🦷 Perfacto Smile</h2>
+        <div class="clinic-name">نظام إدارة العيادة</div>
+        <input type="text" id="loginUsername" placeholder="اسم المستخدم" autocomplete="off">
+        <input type="password" id="loginPassword" placeholder="كلمة السر">
+        <button onclick="checkLogin()">دخول <i class="fas fa-arrow-left"></i></button>
+        <div id="loginError" class="login-error"></div>
+    </div>
+</div>
+
+<!-- المحتوى الرئيسي -->
+<div id="appContainer" class="app-container">
+
+    <!-- الهيدر -->
+    <div class="header">
+        <div class="logo">
+            <h1><i class="fas fa-tooth"></i> Perfacto Smile</h1>
+            <p>نظام إدارة المواعيد والعلاجات</p>
+        </div>
+        <div>
+            <span style="margin-left: 15px;"><i class="fas fa-user"></i> مرحباً، حمزة</span>
+            <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> خروج</button>
+        </div>
+    </div>
+
+    <!-- الإحصائيات -->
+    <div class="stats-grid">
+        <div class="stat-card"><i class="fas fa-hourglass-half" style="color:#fd7e14"></i><div class="stat-number waiting" id="waitingCount">0</div><div class="stat-label">في انتظار العلاج</div></div>
+        <div class="stat-card"><i class="fas fa-stethoscope" style="color:#2c7da0"></i><div class="stat-number treatment" id="treatmentCount">0</div><div class="stat-label">قيد العلاج</div></div>
+        <div class="stat-card"><i class="fas fa-check-circle" style="color:#28a745"></i><div class="stat-number completed" id="completedCount">0</div><div class="stat-label">تم العلاج</div></div>
+        <div class="stat-card"><i class="fas fa-users" style="color:#17a2b8"></i><div class="stat-number total" id="totalCount">0</div><div class="stat-label">إجمالي المرضى</div></div>
+        <div class="stat-card"><i class="fas fa-money-bill-wave" style="color:#fd7e14"></i><div class="stat-number total-money" id="totalMoney">0</div><div class="stat-label">إجمالي المدفوعات (دج)</div></div>
+    </div>
+
+    <!-- إضافة مريض جديد -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-user-plus"></i> إضافة مريض جديد</div>
+        <div class="form-row">
+            <input type="text" id="patientName" placeholder="اسم المريض *">
+            <input type="tel" id="patientPhone" placeholder="رقم الهاتف *">
+            <input type="date" id="appDate">
+            <input type="time" id="appTime">
+        </div>
+        <div class="form-row">
+            <select id="doctorName">
+                <option value="Dr. belouanes">👨‍⚕️ Dr. belouanes</option>
+                <option value="Dr. ait aissa">👨‍⚕️ Dr. ait aissa</option>
+                <option value="Dr. saad Eddine">👨‍⚕️ Dr. saad Eddine</option>
+            </select>
+            <input type="text" id="serviceType" placeholder="نوع الخدمة (خلع سن، حشو، ...)">
+            <input type="number" id="servicePrice" placeholder="السعر (دج)">
+        </div>
+        <div class="form-row">
+            <textarea id="patientNotes" rows="2" placeholder="ملاحظات إضافية"></textarea>
+        </div>
+        <div class="btn-group">
+            <button class="btn btn-primary" onclick="addPatient()"><i class="fas fa-save"></i> حفظ المريض</button>
+            <button class="btn btn-secondary" onclick="clearForm()"><i class="fas fa-eraser"></i> مسح الحقول</button>
+        </div>
+    </div>
+
+    <!-- البحث -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-search"></i> بحث متقدم</div>
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="🔍 بحث بالاسم أو الهاتف أو الدكتور..." onkeyup="filterPatients()">
+            <input type="date" id="searchDate" onchange="filterPatients()">
+            <button class="btn btn-secondary" onclick="resetSearch()"><i class="fas fa-undo"></i> إعادة تعيين</button>
+        </div>
+    </div>
+
+    <!-- قائمة المرضى -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-list"></i> إدارة المرضى</div>
+        
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('waiting')">🕐 في الانتظار</div>
+            <div class="tab" onclick="switchTab('treatment')">⚕️ قيد العلاج</div>
+            <div class="tab" onclick="switchTab('completed')">✅ تم العلاج</div>
+            <div class="tab" onclick="switchTab('all')">📋 الكل</div>
+        </div>
+
+        <div id="tab-waiting" class="tab-content active"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="waitingList"></tbody></table></div></div>
+        <div id="tab-treatment" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>وقت الدخول</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="treatmentList"></tbody></table></div></div>
+        <div id="tab-completed" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>تاريخ العلاج</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="completedList"></tbody></table></div></div>
+        <div id="tab-all" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الحالة</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="allList"></tbody></table></div></div>
+
+        <div class="btn-group" style="margin-top: 20px;">
+            <button class="btn btn-success" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
+            <button class="btn btn-danger" onclick="exportToPDF()"><i class="fas fa-file-pdf"></i> تصدير PDF</button>
+            <button class="btn btn-info" onclick="shareWhatsApp()"><i class="fab fa-whatsapp"></i> مشاركة واتساب</button>
+        </div>
+    </div>
+</div>
+
+<!-- نافذة الدفع -->
+<div id="paymentModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:10000; justify-content:center; align-items:center;">
+    <div style="background:white; border-radius:25px; padding:30px; width:90%; max-width:350px; text-align:center;">
+        <h3 style="margin-bottom:15px;">💰 تسجيل الدفع</h3>
+        <div id="paymentInfo"></div>
+        <input type="number" id="paymentAmount" placeholder="المبلغ المدفوع (دج)" style="margin:15px 0;">
+        <div class="btn-group">
+            <button class="btn btn-success" onclick="confirmPayment()">تأكيد</button>
+            <button class="btn btn-secondary" onclick="closePaymentModal()">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<!-- شاشة تحميل -->
+<div id="loadingOverlay" class="loading-overlay"><div class="loading-spinner"></div><div class="loading-text" style="color:white; margin-top:15px;">جاري التحضير...</div></div>
+
+<script>
+    // بيانات تسجيل الدخول
+    const VALID_USERNAME = "hamza";
+    const VALID_PASSWORD = "hmaza05";
+    
+    let patients = [];
+    let currentPatientId = null;
+    let searchTerm = "";
+    let searchDate = "";
+    const APP_DATA_KEY = 'perfacto_smile_patients_v7';
+    const STATUS = { WAITING: 'waiting', TREATMENT: 'treatment', COMPLETED: 'completed' };
+
+    // تسجيل الدخول
+    function checkLogin() {
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        
+        if(username === VALID_USERNAME && password === VALID_PASSWORD) {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            loadData();
+        } else {
+            document.getElementById('loginError').innerHTML = '❌ اسم المستخدم أو كلمة السر غير صحيحة';
+        }
+    }
+    
+    function logout() {
+        document.getElementById('loginContainer').style.display = 'flex';
+        document.getElementById('appContainer').style.display = 'none';
+        document.getElementById('loginUsername').value = '';
+        document.getElementById('loginPassword').value = '';
+        document.getElementById('loginError').innerHTML = '';
+    }
+
+    // حفظ وتحميل البيانات
+    function loadData() {
+        const saved = localStorage.getItem(APP_DATA_KEY);
+        if(saved) {
+            try {
+                patients = JSON.parse(saved);
+            } catch(e) { patients = []; }
+        } else {
+            patients = [];
+        }
+        renderAll();
+    }
+
+    function saveData() {
+        localStorage.setItem(APP_DATA_KEY, JSON.stringify(patients));
+        renderAll();
+        showToast('✅ تم حفظ البيانات');
+    }
+
+    // إضافة مريض
+    function addPatient() {
+        const name = document.getElementById('patientName').value.trim();
+        const phone = document.getElementById('patientPhone').value.trim();
+        let date = document.getElementById('appDate').value;
+        let time = document.getElementById('appTime').value;
+        const doctor = document.getElementById('doctorName').value;
+        const service = document.getElementById('serviceType').value.trim();
+        let price = document.getElementById('servicePrice').value;
+        const notes = document.getElementById('patientNotes').value.trim();
+
+        if(!name || !phone) { showToast('الرجاء إدخال الاسم ورقم الهاتف', true); return; }
+        if(!date) date = new Date().toISOString().split('T')[0];
+        if(!time) time = '09:00';
+
+        const newPatient = {
+            id: Date.now(),
+            name, phone, date, time, doctor,
+            service: service || 'فحص عام',
+            price: parseInt(price) || 0,
+            paid: 0,
+            isPaid: false,
+            notes,
+            status: STATUS.WAITING,
+            treatmentStartTime: null,
+            treatmentEndTime: null,
+            createdAt: new Date().toISOString()
+        };
+        patients.push(newPatient);
+        saveData();
+        clearForm();
+        showToast(`✅ تم إضافة المريض ${name}`);
+    }
+
+    // الدفع
+    function openPaymentModal(id) {
+        currentPatientId = id;
+        const p = patients.find(p => p.id === id);
+        document.getElementById('paymentInfo').innerHTML = `
+            <p><strong>المريض:</strong> ${p.name}</p>
+            <p><strong>الخدمة:</strong> ${p.service}</p>
+            <p><strong>قيمة الخدمة:</strong> ${p.price} دج</p>
+            <p><strong>المدفوع:</strong> ${p.paid} دج</p>
+            <p><strong>المتبقي:</strong> ${p.price - p.paid} دج</p>
+        `;
+        document.getElementById('paymentAmount').value = p.price - p.paid;
+        document.getElementById('paymentModal').style.display = 'flex';
+    }
+
+    function confirmPayment() {
+        const amount = parseInt(document.getElementById('paymentAmount').value) || 0;
+        const p = patients.find(p => p.id === currentPatientId);
+        if(p) {
+            p.paid += amount;
+            p.isPaid = p.paid >= p.price;
+            saveData();
+            showToast(`💰 تم تسجيل دفع ${amount} دج`);
+        }
+        closePaymentModal();
+    }
+
+    function closePaymentModal() { document.getElementById('paymentModal').style.display = 'none'; currentPatientId = null; }
+
+    // تغيير الحالة
+    function startTreatment(id) { const p = patients.find(p => p.id === id); if(p) { p.status = STATUS.TREATMENT; p.treatmentStartTime = new Date().toISOString(); saveData(); showToast(`⚕️ بدء علاج ${p.name}`); } }
+    function completeTreatment(id) { const p = patients.find(p => p.id === id); if(p) { p.status = STATUS.COMPLETED; p.treatmentEndTime = new Date().toISOString(); saveData(); showToast(`✅ تم إكمال علاج ${p.name}`); } }
+    function reopenPatient(id) { const p = patients.find(p => p.id === id); if(p) { p.status = STATUS.WAITING; p.treatmentStartTime = null; p.treatmentEndTime = null; saveData(); showToast(`🔄 إعادة ${p.name} للانتظار`); } }
+    function deletePatient(id) { if(confirm('⚠️ هل تريد حذف هذا المريض؟')) { patients = patients.filter(p => p.id !== id); saveData(); showToast('🗑️ تم الحذف'); } }
+
+    // البحث
+    function filterPatients() {
+        searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        searchDate = document.getElementById('searchDate').value;
+        renderAll();
+    }
+
+    function resetSearch() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('searchDate').value = '';
+        searchTerm = '';
+        searchDate = '';
+        renderAll();
+    }
+
+    function filterList(list) {
+        return list.filter(p => {
+            const matchTerm = searchTerm === '' || p.name.toLowerCase().includes(searchTerm) || p.phone.includes(searchTerm) || p.doctor.toLowerCase().includes(searchTerm);
+            const matchDate = searchDate === '' || p.date === searchDate;
+            return matchTerm && matchDate;
+        });
+    }
+
+    // عرض البيانات
+    function renderAll() {
+        updateStats();
+        renderList('waitingList', filterList(patients.filter(p => p.status === STATUS.WAITING)), 'waiting');
+        renderList('treatmentList', filterList(patients.filter(p => p.status === STATUS.TREATMENT)), 'treatment');
+        renderList('completedList', filterList(patients.filter(p => p.status === STATUS.COMPLETED)), 'completed');
+        renderAllList();
+    }
+
+    function renderList(elementId, list, type) {
+        const html = list.map(p => `
+            <tr>
+                <td><b>${escapeHtml(p.name)}</b><br><small>${escapeHtml(p.service)}</small></td>
+                <td dir="ltr">${escapeHtml(p.phone)}</td>
+                <td>${escapeHtml(p.doctor)}</td>
+                <td>${type === 'treatment' ? (p.treatmentStartTime ? new Date(p.treatmentStartTime).toLocaleTimeString('ar-EG') : '—') : (p.date + '<br>' + p.time)}</td>
+                <td>${escapeHtml(p.service)}</td>
+                <td>${p.price} دج</td>
+                <td><span class="${p.isPaid ? 'payment-paid' : 'payment-unpaid'}" style="padding:4px 8px;border-radius:8px;">${p.isPaid ? '✅ مدفوع' : '❌ غير مدفوع'}<br>${p.paid}/${p.price}</span></td>
+                <td><small>${escapeHtml(p.notes || '—')}</small></td>
+                <td>
+                    ${type === 'waiting' ? `<button class="action-btn btn-primary" onclick="startTreatment(${p.id})">▶️ بدء</button>` : ''}
+                    ${type === 'treatment' ? `<button class="action-btn btn-success" onclick="completeTreatment(${p.id})">✅ إنهاء</button>` : ''}
+                    ${type === 'completed' ? `<button class="action-btn btn-warning" onclick="reopenPatient(${p.id})">🔄 إعادة</button>` : ''}
+                    <button class="action-btn btn-info" onclick="openPaymentModal(${p.id})">💰 دفع</button>
+                    <button class="action-btn btn-danger" onclick="deletePatient(${p.id})">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
+        document.getElementById(elementId).innerHTML = html || '<tr><td colspan="9" style="text-align:center;">لا توجد بيانات</td></tr>';
+    }
+
+    function renderAllList() {
+        const statusText = {
+            'waiting': '<span class="status-badge status-waiting">🕐 في الانتظار</span>',
+            'treatment': '<span class="status-badge status-treatment">⚕️ قيد العلاج</span>',
+            'completed': '<span class="status-badge status-completed">✅ تم العلاج</span>'
+        };
+        const filtered = filterList(patients);
+        const html = filtered.map(p => `
+            <tr>
+                <td><b>${escapeHtml(p.name)}</b><br><small>${escapeHtml(p.service)}</small></td>
+                <td dir="ltr">${escapeHtml(p.phone)}</td>
+                <td>${escapeHtml(p.doctor)}</td>
+                <td>${p.date}<br>${p.time}</td>
+                <td>${escapeHtml(p.service)}</td>
+                <td>${p.price} دج</td>
+                <td><span class="${p.isPaid ? 'payment-paid' : 'payment-unpaid'}" style="padding:4px 8px;border-radius:8px;">${p.isPaid ? 'مدفوع' : 'غير مدفوع'}<br>${p.paid}/${p.price}</span></td>
+                <td>${statusText[p.status]}</td>
+                <td><small>${escapeHtml(p.notes || '—')}</small></td>
+                <td>
+                    ${p.status === 'waiting' ? `<button class="action-btn btn-primary" onclick="startTreatment(${p.id})">▶️</button>` : ''}
+                    ${p.status === 'treatment' ? `<button class="action-btn btn-success" onclick="completeTreatment(${p.id})">✅</button>` : ''}
+                    ${p.status === 'completed' ? `<button class="action-btn btn-warning" onclick="reopenPatient(${p.id})">🔄</button>` : ''}
+                    <button class="action-btn btn-info" onclick="openPaymentModal(${p.id})">💰</button>
+                    <button class="action-btn btn-danger" onclick="deletePatient(${p.id})">🗑️</button>
+                </td>
+            </tr>
+        `).join('');
+        document.getElementById('allList').innerHTML = html || '<tr><td colspan="10" style="text-align:center;">لا توجد بيانات</td></tr>';
+    }
+
+    function updateStats() {
+        document.getElementById('waitingCount').innerText = patients.filter(p => p.status === STATUS.WAITING).length;
+        document.getElementById('treatmentCount').innerText = patients.filter(p => p.status === STATUS.TREATMENT).length;
+        document.getElementById('completedCount').innerText = patients.filter(p => p.status === STATUS.COMPLETED).length;
+        document.getElementById('totalCount').innerText = patients.length;
+        document.getElementById('totalMoney').innerText = patients.reduce((s,p) => s + p.paid, 0).toLocaleString();
+    }
+
+    // تصدير Excel
+    function exportToExcel() {
+        if(patients.length === 0) { showToast('لا توجد بيانات', true); return; }
+        const data = patients.map(p => ({
+            'اسم المريض': p.name, 'رقم الهاتف': p.phone, 'الطبيب': p.doctor,
+            'التاريخ': p.date, 'الوقت': p.time, 'الخدمة': p.service,
+            'السعر (دج)': p.price, 'المدفوع (دج)': p.paid, 'المتبقي': p.price - p.paid,
+            'حالة الدفع': p.isPaid ? 'مدفوع' : 'غير مدفوع',
+            'حالة العلاج': p.status === 'waiting' ? 'في الانتظار' : (p.status === 'treatment' ? 'قيد العلاج' : 'تم العلاج'),
+            'ملاحظات': p.notes || ''
+        }));
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'المرضى');
+        XLSX.writeFile(wb, `مواعيد_Perfacto_${Date.now()}.xlsx`);
+        showToast('✅ تم تصدير Excel');
+    }
+
+    // تصدير PDF
+    async function exportToPDF() {
+        if(patients.length === 0) { showToast('لا توجد بيانات', true); return; }
+        const loading = document.getElementById('loadingOverlay');
+        loading.style.display = 'flex';
+        try {
+            const today = new Date().toLocaleString('ar-EG');
+            let html = `
+                <html dir="rtl"><head><meta charset="UTF-8"><title>تقرير Perfacto Smile</title>
+                <style>
+                    body { font-family: 'Tahoma', Arial; padding: 20px; }
+                    h1 { color: #1e3a5f; text-align: center; }
+                    .info { text-align: center; margin-bottom: 20px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+                    th { background: #1e3a5f; color: white; }
+                    .footer { text-align: center; margin-top: 20px; font-size: 10px; }
+                </style></head>
+                <body>
+                    <h1>🦷 عيادة Perfacto Smile</h1>
+                    <div class="info"><p>تقرير المواعيد - ${today}</p><p>إجمالي المواعيد: ${patients.length}</p></div>
+                    <table><thead><tr><th>#</th><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>التاريخ</th><th>الوقت</th><th>الخدمة</th><th>السعر</th><th>المدفوع</th><th>الحالة</th></tr></thead><tbody>`;
+            patients.forEach((p, i) => {
+                const statusAr = p.status === 'waiting' ? 'في الانتظار' : (p.status === 'treatment' ? 'قيد العلاج' : 'تم العلاج');
+                html += `<tr><td>${i+1}</td><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.phone)}</td><td>${escapeHtml(p.doctor)}</td><td>${p.date}</td><td>${p.time}</td><td>${escapeHtml(p.service)}</td><td>${p.price}</td><td>${p.paid}</td><td>${statusAr}</td></tr>`;
+            });
+            html += `</tbody></table><div class="footer">تم التصدير من نظام Perfacto Smile - للاستفسار: ${document.querySelector('#patientPhone')?.value || 'اتصل بالعيادة'}</div>
+                    <div style="text-align:center; margin-top:20px;"><button onclick="window.print()">🖨️ طباعة</button><button onclick="window.close()">❌ إغلاق</button></div>
+                    <script>setTimeout(() => { if(confirm("حفظ التقرير كـ PDF؟")) window.print(); }, 500);<\/script>
+                </body></html>`;
+            const win = window.open();
+            win.document.write(html);
+            win.document.close();
+            loading.style.display = 'none';
+            showToast('✅ تم فتح PDF، استخدم الطباعة للحفظ');
+        } catch(e) { loading.style.display = 'none'; showToast('❌ خطأ', true); }
+    }
+
+    function shareWhatsApp() {
+        if(patients.length === 0) { showToast('لا توجد بيانات', true); return; }
+        let msg = "🦷 *عيادة Perfacto Smile*\n📋 *تقرير المواعيد*\n";
+        patients.forEach((p, i) => { msg += `${i+1}. ${p.name} - ${p.phone} - ${p.date}\n`; });
+        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+        showToast('📱 جاري فتح واتساب');
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+        document.getElementById(`tab-${tabName}`).classList.add('active');
+        const map = { waiting: 0, treatment: 1, completed: 2, all: 3 };
+        const tabs = document.querySelectorAll('.tab');
+        if(tabs[map[tabName]]) tabs[map[tabName]].classList.add('active');
+    }
+
+    function clearForm() {
+        document.getElementById('patientName').value = '';
+        document.getElementById('patientPhone').value = '';
+        document.getElementById('appDate').value = new Date().toISOString().split('T')[0];
+        document.getElementById('appTime').value = '10:00';
+        document.getElementById('serviceType').value = '';
+        document.getElementById('servicePrice').value = '';
+        document.getElementById('patientNotes').value = '';
+    }
+
+    function showToast(msg, isErr = false) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.style.background = isErr ? '#dc3545' : '#28a745';
+        toast.innerHTML = `<i class="fas ${isErr ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 3000);
+    }
+
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
+
+    function setDefaultDate() {
+        if(!document.getElementById('appDate').value) document.getElementById('appDate').value = new Date().toISOString().split('T')[0];
+        if(!document.getElementById('appTime').value) document.getElementById('appTime').value = '10:00';
+    }
+
+    setDefaultDate();
+    
+    // Service Worker للتشغيل بدون إنترنت
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(e => console.log('SW error:', e)); }
+</script>
+</body>
+</html>
