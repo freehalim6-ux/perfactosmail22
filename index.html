@@ -11,7 +11,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Perfacto Smile">
     <meta name="theme-color" content="#1e3a5f">
-    <meta name="description" content="نظام إدارة عيادة الأسنان Perfacto Smile">
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -109,6 +108,25 @@
 
         .login-box button:active { transform: scale(0.98); }
         .login-error { color: #dc3545; margin-top: 10px; font-size: 14px; }
+        
+        .remember-me {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            margin-bottom: 15px;
+            gap: 8px;
+        }
+        .remember-me label {
+            font-size: 14px;
+            color: #555;
+            cursor: pointer;
+        }
+        .remember-me input {
+            width: 18px;
+            height: 18px;
+            margin: 0;
+            cursor: pointer;
+        }
 
         /* التطبيق الرئيسي */
         body {
@@ -410,6 +428,10 @@
         <div class="clinic-name">نظام إدارة العيادة</div>
         <input type="text" id="loginUsername" placeholder="اسم المستخدم" autocomplete="off">
         <input type="password" id="loginPassword" placeholder="كلمة السر">
+        <div class="remember-me">
+            <input type="checkbox" id="rememberMe" checked>
+            <label for="rememberMe">تذكرني</label>
+        </div>
         <button onclick="checkLogin()">دخول <i class="fas fa-arrow-left"></i></button>
         <div id="loginError" class="login-error"></div>
     </div>
@@ -490,7 +512,7 @@
         <div id="tab-waiting" class="tab-content active"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="waitingList"></tbody></table></div></div>
         <div id="tab-treatment" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>وقت الدخول</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="treatmentList"></tbody></table></div></div>
         <div id="tab-completed" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>تاريخ العلاج</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="completedList"></tbody></table></div></div>
-        <div id="tab-all" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الحالة</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="allList"></tbody></table></div></div>
+        <div id="tab-all" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الحالة</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="allList"></tbody><table></div></div>
 
         <div class="btn-group" style="margin-top: 20px;">
             <button class="btn btn-success" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
@@ -528,29 +550,51 @@
     const APP_DATA_KEY = 'perfacto_smile_patients_v7';
     const STATUS = { WAITING: 'waiting', TREATMENT: 'treatment', COMPLETED: 'completed' };
 
-    // تسجيل الدخول
-    function checkLogin() {
-        const username = document.getElementById('loginUsername').value.trim();
-        const password = document.getElementById('loginPassword').value;
-        
-        if(username === VALID_USERNAME && password === VALID_PASSWORD) {
+    // ============ نظام تسجيل الدخول مع حفظ الجلسة ============
+    
+    // التحقق من حالة تسجيل الدخول عند تحميل الصفحة
+    function checkLoginStatus() {
+        const isLoggedIn = localStorage.getItem('isLoggedIn');
+        if(isLoggedIn === 'true') {
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('appContainer').style.display = 'block';
             loadData();
         } else {
+            document.getElementById('loginContainer').style.display = 'flex';
+            document.getElementById('appContainer').style.display = 'none';
+        }
+    }
+
+    // دالة تسجيل الدخول
+    function checkLogin() {
+        const username = document.getElementById('loginUsername').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const rememberMe = document.getElementById('rememberMe').checked;
+        
+        if(username === VALID_USERNAME && password === VALID_PASSWORD) {
+            if(rememberMe) {
+                localStorage.setItem('isLoggedIn', 'true');
+            }
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'block';
+            loadData();
+            document.getElementById('loginError').innerHTML = '';
+        } else {
             document.getElementById('loginError').innerHTML = '❌ اسم المستخدم أو كلمة السر غير صحيحة';
         }
     }
-    
+
+    // دالة تسجيل الخروج
     function logout() {
+        localStorage.removeItem('isLoggedIn');
         document.getElementById('loginContainer').style.display = 'flex';
         document.getElementById('appContainer').style.display = 'none';
         document.getElementById('loginUsername').value = '';
         document.getElementById('loginPassword').value = '';
-        document.getElementById('loginError').innerHTML = '';
+        document.getElementById('rememberMe').checked = true;
     }
 
-    // حفظ وتحميل البيانات
+    // ============ حفظ وتحميل البيانات ============
     function loadData() {
         const saved = localStorage.getItem(APP_DATA_KEY);
         if(saved) {
@@ -569,7 +613,7 @@
         showToast('✅ تم حفظ البيانات');
     }
 
-    // إضافة مريض
+    // ============ إضافة مريض ============
     function addPatient() {
         const name = document.getElementById('patientName').value.trim();
         const phone = document.getElementById('patientPhone').value.trim();
@@ -690,7 +734,7 @@
                 </td>
             </tr>
         `).join('');
-        document.getElementById(elementId).innerHTML = html || '<tr><td colspan="9" style="text-align:center;">لا توجد بيانات</td></tr>';
+        document.getElementById(elementId).innerHTML = html || '<tr><td colspan="9" style="text-align:center;">لا توجد بيانات<\/td><\/tr>';
     }
 
     function renderAllList() {
@@ -720,7 +764,7 @@
                 </td>
             </tr>
         `).join('');
-        document.getElementById('allList').innerHTML = html || '<tr><td colspan="10" style="text-align:center;">لا توجد بيانات</td></tr>';
+        document.getElementById('allList').innerHTML = html || '<tr><td colspan="10" style="text-align:center;">لا توجد بيانات<\/td><\/tr>';
     }
 
     function updateStats() {
@@ -775,7 +819,7 @@
                 const statusAr = p.status === 'waiting' ? 'في الانتظار' : (p.status === 'treatment' ? 'قيد العلاج' : 'تم العلاج');
                 html += `<tr><td>${i+1}</td><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.phone)}</td><td>${escapeHtml(p.doctor)}</td><td>${p.date}</td><td>${p.time}</td><td>${escapeHtml(p.service)}</td><td>${p.price}</td><td>${p.paid}</td><td>${statusAr}</td></tr>`;
             });
-            html += `</tbody></table><div class="footer">تم التصدير من نظام Perfacto Smile - للاستفسار: ${document.querySelector('#patientPhone')?.value || 'اتصل بالعيادة'}</div>
+            html += `</tbody></table><div class="footer">تم التصدير من نظام Perfacto Smile</div>
                     <div style="text-align:center; margin-top:20px;"><button onclick="window.print()">🖨️ طباعة</button><button onclick="window.close()">❌ إغلاق</button></div>
                     <script>setTimeout(() => { if(confirm("حفظ التقرير كـ PDF؟")) window.print(); }, 500);<\/script>
                 </body></html>`;
@@ -832,7 +876,10 @@
 
     setDefaultDate();
     
-    // Service Worker للتشغيل بدون إنترنت
+    // التحقق من حالة تسجيل الدخول عند تحميل الصفحة
+    checkLoginStatus();
+    
+    // Service Worker
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(e => console.log('SW error:', e)); }
 </script>
 </body>
