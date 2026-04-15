@@ -52,7 +52,7 @@
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid #e0e0e0; }
         th { background: #f0f8fc; color: #1e3a5f; }
         .action-btn { padding: 5px 10px; margin: 2px; border: none; border-radius: 8px; cursor: pointer; }
-        .payment-paid { background: #d4edda; color: #28a745; padding: 4px 8px; border-radius: 8px; }
+        .payment-paid { background: #d4edda; color: #28a745; padding: 4px 8px; border-radius: 8px; display: inline-block; }
         .toast { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #28a745; color: white; padding: 12px; border-radius: 12px; text-align: center; z-index: 9999; max-width: 400px; margin: auto; }
         .toast.error { background: #dc3545; }
         .loading { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 10000; flex-direction: column; }
@@ -125,7 +125,7 @@
         </div>
         <div id="tab-waiting" class="tab-content active"><div class="table-wrapper"><table><thead> pro(<th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th> </tr></thead><tbody id="waitingList"></tbody> </table></div></div>
         <div id="tab-treatment" class="tab-content"><div class="table-wrapper"> <table><thead> <tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>وقت الدخول</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th> </tr></thead><tbody id="treatmentList"></tbody> </table></div></div>
-        <div id="tab-completed" class="tab-content"><div class="table-wrapper"> <table><thead> <tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>تاريخ العلاج</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th> </tr></thead><tbody id="completedList"></tbody> </table></div></div>
+        <div id="tab-completed" class="tab-content"><div class="table-wrapper"> </table><thead> <tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>تاريخ العلاج</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th> </tr></thead><tbody id="completedList"></tbody> </table></div></div>
         <div id="tab-all" class="tab-content"><div class="table-wrapper"> <table><thead> <tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الحالة</th><th>الإجراءات</th> </tr></thead><tbody id="allList"></tbody> </table></div></div>
         <div class="btn-group"><button class="btn btn-success" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Excel</button><button class="btn btn-info" onclick="shareWhatsApp()"><i class="fab fa-whatsapp"></i> واتساب</button></div>
     </div>
@@ -135,6 +135,7 @@
 
 <div id="loading" class="loading"><div class="spinner"></div><div style="color:white; margin-top:15px;">جاري التحميل...</div></div>
 
+<!-- Firebase SDK - كل شيء في ملف واحد -->
 <script type="module">
     // استيراد Firebase
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
@@ -150,27 +151,11 @@
         appId: "1:763561733402:web:1ce9621bdc8924dff3d0a3"
     };
     
+    // تهيئة Firebase
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
     const auth = getAuth(app);
+    const db = getFirestore(app);
     
-    // جعل الدوال متاحة للكود العادي
-    window.db = db;
-    window.auth = auth;
-    window.collection = collection;
-    window.addDoc = addDoc;
-    window.getDocs = getDocs;
-    window.updateDoc = updateDoc;
-    window.deleteDoc = deleteDoc;
-    window.doc = doc;
-    window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-    window.signOut = signOut;
-    window.onAuthStateChanged = onAuthStateChanged;
-    
-    console.log("✅ Firebase ready");
-</script>
-
-<script>
     let patients = [];
     let currentUser = null;
     let currentPatientId = null;
@@ -178,6 +163,7 @@
     let searchDate = "";
     const STATUS = { WAITING: 'waiting', TREATMENT: 'treatment', COMPLETED: 'completed' };
     
+    // ============ دوال مساعدة ============
     function showToast(msg, isError = false) {
         const toast = document.createElement('div');
         toast.className = 'toast' + (isError ? ' error' : '');
@@ -190,7 +176,9 @@
         document.getElementById('loading').style.display = show ? 'flex' : 'none';
     }
     
-    // ============ تسجيل الدخول ============
+    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
+    
+    // ============ دوال تسجيل الدخول ============
     window.login = async function() {
         const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
@@ -218,13 +206,11 @@
         try {
             await signOut(auth);
             showToast('✅ تم تسجيل الخروج');
-        } catch (error) {
-            console.error(error);
-        }
+        } catch (error) { console.error(error); }
         showLoading(false);
     };
     
-    // ============ تحميل وحفظ البيانات ============
+    // ============ دوال البيانات ============
     async function loadPatients() {
         if (!db || !currentUser) return;
         showLoading(true);
@@ -371,6 +357,7 @@
         currentPatientId = null;
     };
     
+    // ============ دوال العرض ============
     function filterPatients() {
         searchText = document.getElementById('searchText').value.toLowerCase();
         searchDate = document.getElementById('searchDate').value;
@@ -424,13 +411,13 @@
                     <button class="action-btn btn-info" onclick="openPaymentModal('${p.id}')">💰 دفع</button>
                     <button class="action-btn btn-danger" onclick="deletePatient('${p.id}')">🗑️</button>
                 </td>
-            </tr>
+            </table>
         `).join('');
         document.getElementById(elementId).innerHTML = html || '<tr><td colspan="8">لا توجد بيانات</td></tr>';
     }
     
     function renderAllList(list) {
-        const statusText = { waiting: '<span class="status-badge status-waiting">🕐 في الانتظار</span>', treatment: '<span class="status-badge status-treatment">⚕️ قيد العلاج</span>', completed: '<span class="status-badge status-completed">✅ تم العلاج</span>' };
+        const statusText = { waiting: '<span style="background:#fff3e0;color:#fd7e14;padding:4px 12px;border-radius:20px;">🕐 في الانتظار</span>', treatment: '<span style="background:#e0f0fc;color:#2c7da0;padding:4px 12px;border-radius:20px;">⚕️ قيد العلاج</span>', completed: '<span style="background:#d4edda;color:#28a745;padding:4px 12px;border-radius:20px;">✅ تم العلاج</span>' };
         const html = list.map(p => `
             <tr>
                 <td><b>${escapeHtml(p.name)}</b><br><small>${escapeHtml(p.service)}</small></td>
@@ -480,9 +467,7 @@
         showToast('📱 جاري فتح واتساب');
     };
     
-    function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
-    
-    // إعدادات أولية
+    // ============ الإعدادات الأولية ============
     if (!document.getElementById('date').value) {
         document.getElementById('date').value = new Date().toISOString().split('T')[0];
         document.getElementById('time').value = '10:00';
@@ -493,7 +478,7 @@
     
     // ============ مراقبة حالة تسجيل الدخول ============
     onAuthStateChanged(auth, async (user) => {
-        console.log("Auth state changed:", user ? "logged in" : "logged out");
+        console.log("Auth changed:", user ? "logged in" : "logged out");
         if (user) {
             currentUser = user;
             document.getElementById('loginContainer').style.display = 'none';
