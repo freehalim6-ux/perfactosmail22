@@ -512,7 +512,7 @@
         <div id="tab-waiting" class="tab-content active"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="waitingList"></tbody></table></div></div>
         <div id="tab-treatment" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>وقت الدخول</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="treatmentList"></tbody></table></div></div>
         <div id="tab-completed" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>تاريخ العلاج</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="completedList"></tbody></table></div></div>
-        <div id="tab-all" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الحالة</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="allList"></tbody><table></div></div>
+        <div id="tab-all" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الحالة</th><th>ملاحظات</th><th>الإجراءات</th></tr></thead><tbody id="allList"></tbody></table></div></div>
 
         <div class="btn-group" style="margin-top: 20px;">
             <button class="btn btn-success" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> تصدير Excel</button>
@@ -538,6 +538,36 @@
 <!-- شاشة تحميل -->
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-spinner"></div><div class="loading-text" style="color:white; margin-top:15px;">جاري التحضير...</div></div>
 
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
+  import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
+  
+  const firebaseConfig = {
+    apiKey: "AIzaSyD1iZPNF6PCLXt-o4ehqp5k7b409X9qatU",
+    authDomain: "perfactosmile-clinic.firebaseapp.com",
+    projectId: "perfactosmile-clinic",
+    storageBucket: "perfactosmile-clinic.firebasestorage.app",
+    messagingSenderId: "763561733402",
+    appId: "1:763561733402:web:1ce9621bdc8924dff3d0a3",
+    measurementId: "G-9JH8DHR1RR"
+  };
+  
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  
+  // جعل db متاحاً لباقي الكود
+  window.db = db;
+  window.collection = collection;
+  window.addDoc = addDoc;
+  window.getDocs = getDocs;
+  window.updateDoc = updateDoc;
+  window.deleteDoc = deleteDoc;
+  window.doc = doc;
+  
+  console.log("✅ Firebase connected successfully!");
+</script>
+
 <script>
     // بيانات تسجيل الدخول
     const VALID_USERNAME = "hamza";
@@ -547,7 +577,7 @@
     let currentPatientId = null;
     let searchTerm = "";
     let searchDate = "";
-    const APP_DATA_KEY = 'perfacto_smile_patients_v7';
+    let isFirebaseReady = false;
     const STATUS = { WAITING: 'waiting', TREATMENT: 'treatment', COMPLETED: 'completed' };
 
     // ============ نظام تسجيل الدخول مع حفظ الجلسة ============
@@ -558,7 +588,8 @@
         if(isLoggedIn === 'true') {
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('appContainer').style.display = 'block';
-            loadData();
+            // تأخير تحميل البيانات قليلاً لضمان جاهزية Firebase
+            setTimeout(() => loadData(), 500);
         } else {
             document.getElementById('loginContainer').style.display = 'flex';
             document.getElementById('appContainer').style.display = 'none';
@@ -594,27 +625,81 @@
         document.getElementById('rememberMe').checked = true;
     }
 
-    // ============ حفظ وتحميل البيانات ============
-    function loadData() {
-        const saved = localStorage.getItem(APP_DATA_KEY);
-        if(saved) {
-            try {
-                patients = JSON.parse(saved);
-            } catch(e) { patients = []; }
-        } else {
-            patients = [];
+    // ============ حفظ وتحميل البيانات من Firebase ============
+    
+    async function loadData() {
+        if (!window.db) {
+            console.log("Firebase not ready yet, retrying...");
+            setTimeout(() => loadData(), 500);
+            return;
         }
-        renderAll();
+        
+        showLoading(true);
+        try {
+            const querySnapshot = await getDocs(collection(db, "patients"));
+            patients = [];
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                data.id = doc.id;
+                patients.push(data);
+            });
+            renderAll();
+            showToast('✅ تم تحميل البيانات من السحاب');
+        } catch (error) {
+            console.error("Error loading data:", error);
+            showToast('❌ خطأ في تحميل البيانات', true);
+        } finally {
+            showLoading(false);
+        }
     }
 
-    function saveData() {
-        localStorage.setItem(APP_DATA_KEY, JSON.stringify(patients));
-        renderAll();
-        showToast('✅ تم حفظ البيانات');
+    async function saveData() {
+        if (!window.db) return;
+        
+        showLoading(true);
+        try {
+            for (const patient of patients) {
+                if (patient._deleted) continue;
+                
+                if (patient._synced) continue;
+                
+                const patientData = {
+                    name: patient.name,
+                    phone: patient.phone,
+                    date: patient.date,
+                    time: patient.time,
+                    doctor: patient.doctor,
+                    service: patient.service,
+                    price: patient.price,
+                    paid: patient.paid,
+                    isPaid: patient.isPaid,
+                    notes: patient.notes,
+                    status: patient.status,
+                    treatmentStartTime: patient.treatmentStartTime,
+                    treatmentEndTime: patient.treatmentEndTime,
+                    createdAt: patient.createdAt
+                };
+                
+                if (patient.id && !patient.id.toString().startsWith('temp_')) {
+                    await updateDoc(doc(db, "patients", patient.id), patientData);
+                } else {
+                    const docRef = await addDoc(collection(db, "patients"), patientData);
+                    patient.id = docRef.id;
+                }
+                patient._synced = true;
+            }
+            renderAll();
+            showToast('✅ تم حفظ البيانات في السحاب');
+        } catch (error) {
+            console.error("Error saving data:", error);
+            showToast('❌ خطأ في حفظ البيانات', true);
+        } finally {
+            showLoading(false);
+        }
     }
 
     // ============ إضافة مريض ============
-    function addPatient() {
+    async function addPatient() {
         const name = document.getElementById('patientName').value.trim();
         const phone = document.getElementById('patientPhone').value.trim();
         let date = document.getElementById('appDate').value;
@@ -629,7 +714,7 @@
         if(!time) time = '09:00';
 
         const newPatient = {
-            id: Date.now(),
+            id: 'temp_' + Date.now(),
             name, phone, date, time, doctor,
             service: service || 'فحص عام',
             price: parseInt(price) || 0,
@@ -639,10 +724,11 @@
             status: STATUS.WAITING,
             treatmentStartTime: null,
             treatmentEndTime: null,
-            createdAt: new Date().toISOString()
+            createdAt: new Date().toISOString(),
+            _synced: false
         };
         patients.push(newPatient);
-        saveData();
+        await saveData();
         clearForm();
         showToast(`✅ تم إضافة المريض ${name}`);
     }
@@ -651,6 +737,7 @@
     function openPaymentModal(id) {
         currentPatientId = id;
         const p = patients.find(p => p.id === id);
+        if(!p) return;
         document.getElementById('paymentInfo').innerHTML = `
             <p><strong>المريض:</strong> ${p.name}</p>
             <p><strong>الخدمة:</strong> ${p.service}</p>
@@ -662,13 +749,14 @@
         document.getElementById('paymentModal').style.display = 'flex';
     }
 
-    function confirmPayment() {
+    async function confirmPayment() {
         const amount = parseInt(document.getElementById('paymentAmount').value) || 0;
         const p = patients.find(p => p.id === currentPatientId);
         if(p) {
             p.paid += amount;
             p.isPaid = p.paid >= p.price;
-            saveData();
+            p._synced = false;
+            await saveData();
             showToast(`💰 تم تسجيل دفع ${amount} دج`);
         }
         closePaymentModal();
@@ -677,10 +765,53 @@
     function closePaymentModal() { document.getElementById('paymentModal').style.display = 'none'; currentPatientId = null; }
 
     // تغيير الحالة
-    function startTreatment(id) { const p = patients.find(p => p.id === id); if(p) { p.status = STATUS.TREATMENT; p.treatmentStartTime = new Date().toISOString(); saveData(); showToast(`⚕️ بدء علاج ${p.name}`); } }
-    function completeTreatment(id) { const p = patients.find(p => p.id === id); if(p) { p.status = STATUS.COMPLETED; p.treatmentEndTime = new Date().toISOString(); saveData(); showToast(`✅ تم إكمال علاج ${p.name}`); } }
-    function reopenPatient(id) { const p = patients.find(p => p.id === id); if(p) { p.status = STATUS.WAITING; p.treatmentStartTime = null; p.treatmentEndTime = null; saveData(); showToast(`🔄 إعادة ${p.name} للانتظار`); } }
-    function deletePatient(id) { if(confirm('⚠️ هل تريد حذف هذا المريض؟')) { patients = patients.filter(p => p.id !== id); saveData(); showToast('🗑️ تم الحذف'); } }
+    async function startTreatment(id) { 
+        const p = patients.find(p => p.id === id); 
+        if(p) { 
+            p.status = STATUS.TREATMENT; 
+            p.treatmentStartTime = new Date().toISOString(); 
+            p._synced = false;
+            await saveData(); 
+            showToast(`⚕️ بدء علاج ${p.name}`); 
+        } 
+    }
+    
+    async function completeTreatment(id) { 
+        const p = patients.find(p => p.id === id); 
+        if(p) { 
+            p.status = STATUS.COMPLETED; 
+            p.treatmentEndTime = new Date().toISOString(); 
+            p._synced = false;
+            await saveData(); 
+            showToast(`✅ تم إكمال علاج ${p.name}`); 
+        } 
+    }
+    
+    async function reopenPatient(id) { 
+        const p = patients.find(p => p.id === id); 
+        if(p) { 
+            p.status = STATUS.WAITING; 
+            p.treatmentStartTime = null; 
+            p.treatmentEndTime = null; 
+            p._synced = false;
+            await saveData(); 
+            showToast(`🔄 إعادة ${p.name} للانتظار`); 
+        } 
+    }
+    
+    async function deletePatient(id) { 
+        if(confirm('⚠️ هل تريد حذف هذا المريض؟')) { 
+            const p = patients.find(p => p.id === id);
+            if(p && !p.id.toString().startsWith('temp_')) {
+                try {
+                    await deleteDoc(doc(db, "patients", p.id));
+                } catch(e) { console.error(e); }
+            }
+            patients = patients.filter(p => p.id !== id); 
+            await saveData(); 
+            showToast('🗑️ تم الحذف'); 
+        } 
+    }
 
     // البحث
     function filterPatients() {
@@ -726,15 +857,15 @@
                 <td><span class="${p.isPaid ? 'payment-paid' : 'payment-unpaid'}" style="padding:4px 8px;border-radius:8px;">${p.isPaid ? '✅ مدفوع' : '❌ غير مدفوع'}<br>${p.paid}/${p.price}</span></td>
                 <td><small>${escapeHtml(p.notes || '—')}</small></td>
                 <td>
-                    ${type === 'waiting' ? `<button class="action-btn btn-primary" onclick="startTreatment(${p.id})">▶️ بدء</button>` : ''}
-                    ${type === 'treatment' ? `<button class="action-btn btn-success" onclick="completeTreatment(${p.id})">✅ إنهاء</button>` : ''}
-                    ${type === 'completed' ? `<button class="action-btn btn-warning" onclick="reopenPatient(${p.id})">🔄 إعادة</button>` : ''}
-                    <button class="action-btn btn-info" onclick="openPaymentModal(${p.id})">💰 دفع</button>
-                    <button class="action-btn btn-danger" onclick="deletePatient(${p.id})">🗑️</button>
+                    ${type === 'waiting' ? `<button class="action-btn btn-primary" onclick="startTreatment('${p.id}')">▶️ بدء</button>` : ''}
+                    ${type === 'treatment' ? `<button class="action-btn btn-success" onclick="completeTreatment('${p.id}')">✅ إنهاء</button>` : ''}
+                    ${type === 'completed' ? `<button class="action-btn btn-warning" onclick="reopenPatient('${p.id}')">🔄 إعادة</button>` : ''}
+                    <button class="action-btn btn-info" onclick="openPaymentModal('${p.id}')">💰 دفع</button>
+                    <button class="action-btn btn-danger" onclick="deletePatient('${p.id}')">🗑️</button>
                 </td>
             </tr>
         `).join('');
-        document.getElementById(elementId).innerHTML = html || '<tr><td colspan="9" style="text-align:center;">لا توجد بيانات<\/td><\/tr>';
+        document.getElementById(elementId).innerHTML = html || '<tr><td colspan="9" style="text-align:center;">لا توجد بيانات</td></tr>';
     }
 
     function renderAllList() {
@@ -756,15 +887,15 @@
                 <td>${statusText[p.status]}</td>
                 <td><small>${escapeHtml(p.notes || '—')}</small></td>
                 <td>
-                    ${p.status === 'waiting' ? `<button class="action-btn btn-primary" onclick="startTreatment(${p.id})">▶️</button>` : ''}
-                    ${p.status === 'treatment' ? `<button class="action-btn btn-success" onclick="completeTreatment(${p.id})">✅</button>` : ''}
-                    ${p.status === 'completed' ? `<button class="action-btn btn-warning" onclick="reopenPatient(${p.id})">🔄</button>` : ''}
-                    <button class="action-btn btn-info" onclick="openPaymentModal(${p.id})">💰</button>
-                    <button class="action-btn btn-danger" onclick="deletePatient(${p.id})">🗑️</button>
+                    ${p.status === 'waiting' ? `<button class="action-btn btn-primary" onclick="startTreatment('${p.id}')">▶️</button>` : ''}
+                    ${p.status === 'treatment' ? `<button class="action-btn btn-success" onclick="completeTreatment('${p.id}')">✅</button>` : ''}
+                    ${p.status === 'completed' ? `<button class="action-btn btn-warning" onclick="reopenPatient('${p.id}')">🔄</button>` : ''}
+                    <button class="action-btn btn-info" onclick="openPaymentModal('${p.id}')">💰</button>
+                    <button class="action-btn btn-danger" onclick="deletePatient('${p.id}')">🗑️</button>
                 </td>
             </tr>
         `).join('');
-        document.getElementById('allList').innerHTML = html || '<tr><td colspan="10" style="text-align:center;">لا توجد بيانات<\/td><\/tr>';
+        document.getElementById('allList').innerHTML = html || '<tr><td colspan="10" style="text-align:center;">لا توجد بيانات</td></tr>';
     }
 
     function updateStats() {
@@ -772,7 +903,7 @@
         document.getElementById('treatmentCount').innerText = patients.filter(p => p.status === STATUS.TREATMENT).length;
         document.getElementById('completedCount').innerText = patients.filter(p => p.status === STATUS.COMPLETED).length;
         document.getElementById('totalCount').innerText = patients.length;
-        document.getElementById('totalMoney').innerText = patients.reduce((s,p) => s + p.paid, 0).toLocaleString();
+        document.getElementById('totalMoney').innerText = patients.reduce((s,p) => s + (p.paid || 0), 0).toLocaleString();
     }
 
     // تصدير Excel
@@ -796,8 +927,7 @@
     // تصدير PDF
     async function exportToPDF() {
         if(patients.length === 0) { showToast('لا توجد بيانات', true); return; }
-        const loading = document.getElementById('loadingOverlay');
-        loading.style.display = 'flex';
+        showLoading(true);
         try {
             const today = new Date().toLocaleString('ar-EG');
             let html = `
@@ -826,9 +956,8 @@
             const win = window.open();
             win.document.write(html);
             win.document.close();
-            loading.style.display = 'none';
             showToast('✅ تم فتح PDF، استخدم الطباعة للحفظ');
-        } catch(e) { loading.style.display = 'none'; showToast('❌ خطأ', true); }
+        } catch(e) { showToast('❌ خطأ', true); } finally { showLoading(false); }
     }
 
     function shareWhatsApp() {
@@ -865,6 +994,10 @@
         toast.innerHTML = `<i class="fas ${isErr ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
+    }
+
+    function showLoading(show) {
+        document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
     }
 
     function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
