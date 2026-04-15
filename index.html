@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
-    <title>Perfacto Smile - نظام إدارة العيادة</title>
+    <title>Perfecto Smile - نظام إدارة العيادة</title>
     
     <!-- PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Perfacto Smile">
+    <meta name="apple-mobile-web-app-title" content="Perfecto Smile">
     <meta name="theme-color" content="#1e3a5f">
     
     <link rel="manifest" href="manifest.json">
@@ -65,16 +65,34 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        .clinic-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #2c7da0, #1e5a7a);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .clinic-logo i {
+            font-size: 45px;
+            color: white;
+        }
+
         .login-box h2 {
             color: #1e3a5f;
-            margin-bottom: 10px;
-            font-size: 28px;
+            margin-bottom: 5px;
+            font-size: 26px;
         }
 
         .login-box .clinic-name {
             color: #2c7da0;
             font-size: 14px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
+            font-weight: bold;
         }
 
         .login-box input {
@@ -156,6 +174,26 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
 
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo-icon i {
+            font-size: 28px;
+        }
+        
         .logo h1 {
             font-size: 24px;
             margin-bottom: 5px;
@@ -423,9 +461,11 @@
 <!-- شاشة تسجيل الدخول -->
 <div id="loginContainer" class="login-container">
     <div class="login-box">
-        <i class="fas fa-tooth" style="font-size: 50px; color: #2c7da0; margin-bottom: 15px;"></i>
-        <h2>🦷 Perfacto Smile</h2>
-        <div class="clinic-name">نظام إدارة العيادة</div>
+        <div class="clinic-logo">
+            <i class="fas fa-tooth"></i>
+        </div>
+        <h2>🦷 Perfecto Smile</h2>
+        <div class="clinic-name">عيادة الابتسامة المثالية</div>
         <input type="text" id="loginUsername" placeholder="اسم المستخدم" autocomplete="off">
         <input type="password" id="loginPassword" placeholder="كلمة السر">
         <div class="remember-me">
@@ -443,11 +483,16 @@
     <!-- الهيدر -->
     <div class="header">
         <div class="logo">
-            <h1><i class="fas fa-tooth"></i> Perfacto Smile</h1>
-            <p>نظام إدارة المواعيد والعلاجات</p>
+            <div class="logo-icon">
+                <i class="fas fa-tooth"></i>
+            </div>
+            <div>
+                <h1><i class="fas fa-star-of-life"></i> Perfecto Smile</h1>
+                <p>عيادة الابتسامة المثالية - نظام إدارة المواعيد والعلاجات</p>
+            </div>
         </div>
         <div>
-            <span style="margin-left: 15px;"><i class="fas fa-user"></i> مرحباً، حمزة</span>
+            <span style="margin-left: 15px;"><i class="fas fa-user-md"></i> مرحباً، حمزة</span>
             <button class="logout-btn" onclick="logout()"><i class="fas fa-sign-out-alt"></i> خروج</button>
         </div>
     </div>
@@ -556,7 +601,6 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
   
-  // جعل db متاحاً لباقي الكود
   window.db = db;
   window.collection = collection;
   window.addDoc = addDoc;
@@ -569,9 +613,9 @@
 </script>
 
 <script>
-    // بيانات تسجيل الدخول
+    // بيانات تسجيل الدخول - تم التعديل حسب طلبك
     const VALID_USERNAME = "hamza";
-    const VALID_PASSWORD = "hmaza05";
+    const VALID_PASSWORD = "hamza005";  // ✅ تم تغيير كلمة السر إلى hamza005
     
     let patients = [];
     let currentPatientId = null;
@@ -582,13 +626,11 @@
 
     // ============ نظام تسجيل الدخول مع حفظ الجلسة ============
     
-    // التحقق من حالة تسجيل الدخول عند تحميل الصفحة
     function checkLoginStatus() {
         const isLoggedIn = localStorage.getItem('isLoggedIn');
         if(isLoggedIn === 'true') {
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('appContainer').style.display = 'block';
-            // تأخير تحميل البيانات قليلاً لضمان جاهزية Firebase
             setTimeout(() => loadData(), 500);
         } else {
             document.getElementById('loginContainer').style.display = 'flex';
@@ -596,7 +638,6 @@
         }
     }
 
-    // دالة تسجيل الدخول
     function checkLogin() {
         const username = document.getElementById('loginUsername').value.trim();
         const password = document.getElementById('loginPassword').value;
@@ -615,7 +656,6 @@
         }
     }
 
-    // دالة تسجيل الخروج
     function logout() {
         localStorage.removeItem('isLoggedIn');
         document.getElementById('loginContainer').style.display = 'flex';
@@ -660,20 +700,19 @@
         try {
             for (const patient of patients) {
                 if (patient._deleted) continue;
-                
                 if (patient._synced) continue;
                 
                 const patientData = {
-                    name: patient.name,
-                    phone: patient.phone,
+                    name: sanitizeInput(patient.name),
+                    phone: sanitizeInput(patient.phone),
                     date: patient.date,
                     time: patient.time,
                     doctor: patient.doctor,
-                    service: patient.service,
+                    service: sanitizeInput(patient.service),
                     price: patient.price,
                     paid: patient.paid,
                     isPaid: patient.isPaid,
-                    notes: patient.notes,
+                    notes: sanitizeInput(patient.notes || ''),
                     status: patient.status,
                     treatmentStartTime: patient.treatmentStartTime,
                     treatmentEndTime: patient.treatmentEndTime,
@@ -698,6 +737,14 @@
         }
     }
 
+    // دالة تنظيف الإدخالات للأمان
+    function sanitizeInput(str) {
+        if(!str) return '';
+        return str.replace(/[<>]/g, function(match) {
+            return match === '<' ? '&lt;' : '&gt;';
+        });
+    }
+
     // ============ إضافة مريض ============
     async function addPatient() {
         const name = document.getElementById('patientName').value.trim();
@@ -709,18 +756,20 @@
         let price = document.getElementById('servicePrice').value;
         const notes = document.getElementById('patientNotes').value.trim();
 
-        if(!name || !phone) { showToast('الرجاء إدخال الاسم ورقم الهاتف', true); return; }
+        if(!name || !phone) { showToast('⚠️ الرجاء إدخال الاسم ورقم الهاتف', true); return; }
         if(!date) date = new Date().toISOString().split('T')[0];
         if(!time) time = '09:00';
 
         const newPatient = {
             id: 'temp_' + Date.now(),
-            name, phone, date, time, doctor,
-            service: service || 'فحص عام',
+            name: sanitizeInput(name),
+            phone: sanitizeInput(phone),
+            date, time, doctor,
+            service: sanitizeInput(service) || 'فحص عام',
             price: parseInt(price) || 0,
             paid: 0,
             isPaid: false,
-            notes,
+            notes: sanitizeInput(notes),
             status: STATUS.WAITING,
             treatmentStartTime: null,
             treatmentEndTime: null,
@@ -730,17 +779,36 @@
         patients.push(newPatient);
         await saveData();
         clearForm();
-        showToast(`✅ تم إضافة المريض ${name}`);
+        showToast(`✅ تم إضافة المريض ${sanitizeInput(name)}`);
     }
 
-    // الدفع
+    // دالة تبديل حالة الدفع (تم الدفع / لم يتم الدفع) - ✅ الزر الجديد
+    async function togglePaymentStatus(id) {
+        const p = patients.find(p => p.id === id);
+        if(p) {
+            if(p.isPaid) {
+                // إذا كان مدفوعاً بالكامل، نطلب تأكيد لإلغاء الدفع
+                if(confirm('⚠️ هل تريد إلغاء حالة الدفع لهذا المريض؟')) {
+                    p.isPaid = false;
+                    p.paid = 0;
+                    p._synced = false;
+                    await saveData();
+                    showToast(`🔄 تم تغيير حالة الدفع لـ ${p.name} إلى "غير مدفوع"`);
+                }
+            } else {
+                // إذا كان غير مدفوع، نفتح نافذة الدفع
+                openPaymentModal(id);
+            }
+        }
+    }
+
     function openPaymentModal(id) {
         currentPatientId = id;
         const p = patients.find(p => p.id === id);
         if(!p) return;
         document.getElementById('paymentInfo').innerHTML = `
-            <p><strong>المريض:</strong> ${p.name}</p>
-            <p><strong>الخدمة:</strong> ${p.service}</p>
+            <p><strong>المريض:</strong> ${escapeHtml(p.name)}</p>
+            <p><strong>الخدمة:</strong> ${escapeHtml(p.service)}</p>
             <p><strong>قيمة الخدمة:</strong> ${p.price} دج</p>
             <p><strong>المدفوع:</strong> ${p.paid} دج</p>
             <p><strong>المتبقي:</strong> ${p.price - p.paid} دج</p>
@@ -772,7 +840,7 @@
             p.treatmentStartTime = new Date().toISOString(); 
             p._synced = false;
             await saveData(); 
-            showToast(`⚕️ بدء علاج ${p.name}`); 
+            showToast(`⚕️ بدء علاج ${escapeHtml(p.name)}`); 
         } 
     }
     
@@ -783,7 +851,7 @@
             p.treatmentEndTime = new Date().toISOString(); 
             p._synced = false;
             await saveData(); 
-            showToast(`✅ تم إكمال علاج ${p.name}`); 
+            showToast(`✅ تم إكمال علاج ${escapeHtml(p.name)}`); 
         } 
     }
     
@@ -795,7 +863,7 @@
             p.treatmentEndTime = null; 
             p._synced = false;
             await saveData(); 
-            showToast(`🔄 إعادة ${p.name} للانتظار`); 
+            showToast(`🔄 إعادة ${escapeHtml(p.name)} للانتظار`); 
         } 
     }
     
@@ -857,15 +925,21 @@
                 <td><span class="${p.isPaid ? 'payment-paid' : 'payment-unpaid'}" style="padding:4px 8px;border-radius:8px;">${p.isPaid ? '✅ مدفوع' : '❌ غير مدفوع'}<br>${p.paid}/${p.price}</span></td>
                 <td><small>${escapeHtml(p.notes || '—')}</small></td>
                 <td>
-                    ${type === 'waiting' ? `<button class="action-btn btn-primary" onclick="startTreatment('${p.id}')">▶️ بدء</button>` : ''}
-                    ${type === 'treatment' ? `<button class="action-btn btn-success" onclick="completeTreatment('${p.id}')">✅ إنهاء</button>` : ''}
-                    ${type === 'completed' ? `<button class="action-btn btn-warning" onclick="reopenPatient('${p.id}')">🔄 إعادة</button>` : ''}
-                    <button class="action-btn btn-info" onclick="openPaymentModal('${p.id}')">💰 دفع</button>
-                    <button class="action-btn btn-danger" onclick="deletePatient('${p.id}')">🗑️</button>
+                    <div style="display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">
+                        ${type === 'waiting' ? `<button class="action-btn btn-primary" onclick="startTreatment('${p.id}')" title="بدء العلاج">▶️</button>` : ''}
+                        ${type === 'treatment' ? `<button class="action-btn btn-success" onclick="completeTreatment('${p.id}')" title="إنهاء العلاج">✅</button>` : ''}
+                        ${type === 'completed' ? `<button class="action-btn btn-warning" onclick="reopenPatient('${p.id}')" title="إعادة للانتظار">🔄</button>` : ''}
+                        <button class="action-btn btn-info" onclick="openPaymentModal('${p.id}')" title="تسجيل دفع">💰</button>
+                        <!-- ✅ الزر الجديد: تم الدفع / لم يتم الدفع -->
+                        <button class="action-btn ${p.isPaid ? 'btn-success' : 'btn-warning'}" onclick="togglePaymentStatus('${p.id}')" title="${p.isPaid ? 'إلغاء الدفع' : 'تسجيل كمدفوع'}">
+                            ${p.isPaid ? '💸 إلغاء' : '💵 دفع كامل'}
+                        </button>
+                        <button class="action-btn btn-danger" onclick="deletePatient('${p.id}')" title="حذف">🗑️</button>
+                    </div>
                 </td>
             </tr>
         `).join('');
-        document.getElementById(elementId).innerHTML = html || '<tr><td colspan="9" style="text-align:center;">لا توجد بيانات</td></tr>';
+        document.getElementById(elementId).innerHTML = html || '<tr><td colspan="9" style="text-align:center;">📭 لا توجد بيانات</td></tr>';
     }
 
     function renderAllList() {
@@ -887,15 +961,20 @@
                 <td>${statusText[p.status]}</td>
                 <td><small>${escapeHtml(p.notes || '—')}</small></td>
                 <td>
-                    ${p.status === 'waiting' ? `<button class="action-btn btn-primary" onclick="startTreatment('${p.id}')">▶️</button>` : ''}
-                    ${p.status === 'treatment' ? `<button class="action-btn btn-success" onclick="completeTreatment('${p.id}')">✅</button>` : ''}
-                    ${p.status === 'completed' ? `<button class="action-btn btn-warning" onclick="reopenPatient('${p.id}')">🔄</button>` : ''}
-                    <button class="action-btn btn-info" onclick="openPaymentModal('${p.id}')">💰</button>
-                    <button class="action-btn btn-danger" onclick="deletePatient('${p.id}')">🗑️</button>
+                    <div style="display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;">
+                        ${p.status === 'waiting' ? `<button class="action-btn btn-primary" onclick="startTreatment('${p.id}')" title="بدء العلاج">▶️</button>` : ''}
+                        ${p.status === 'treatment' ? `<button class="action-btn btn-success" onclick="completeTreatment('${p.id}')" title="إنهاء العلاج">✅</button>` : ''}
+                        ${p.status === 'completed' ? `<button class="action-btn btn-warning" onclick="reopenPatient('${p.id}')" title="إعادة للانتظار">🔄</button>` : ''}
+                        <button class="action-btn btn-info" onclick="openPaymentModal('${p.id}')" title="تسجيل دفع">💰</button>
+                        <button class="action-btn ${p.isPaid ? 'btn-success' : 'btn-warning'}" onclick="togglePaymentStatus('${p.id}')" title="${p.isPaid ? 'إلغاء الدفع' : 'تسجيل كمدفوع'}">
+                            ${p.isPaid ? '💸 إلغاء' : '💵 دفع كامل'}
+                        </button>
+                        <button class="action-btn btn-danger" onclick="deletePatient('${p.id}')" title="حذف">🗑️</button>
+                    </div>
                 </td>
             </tr>
         `).join('');
-        document.getElementById('allList').innerHTML = html || '<tr><td colspan="10" style="text-align:center;">لا توجد بيانات</td></tr>';
+        document.getElementById('allList').innerHTML = html || '<tr><td colspan="10" style="text-align:center;">📭 لا توجد بيانات</td></tr>';
     }
 
     function updateStats() {
@@ -908,7 +987,7 @@
 
     // تصدير Excel
     function exportToExcel() {
-        if(patients.length === 0) { showToast('لا توجد بيانات', true); return; }
+        if(patients.length === 0) { showToast('⚠️ لا توجد بيانات للتصدير', true); return; }
         const data = patients.map(p => ({
             'اسم المريض': p.name, 'رقم الهاتف': p.phone, 'الطبيب': p.doctor,
             'التاريخ': p.date, 'الوقت': p.time, 'الخدمة': p.service,
@@ -920,21 +999,22 @@
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'المرضى');
-        XLSX.writeFile(wb, `مواعيد_Perfacto_${Date.now()}.xlsx`);
-        showToast('✅ تم تصدير Excel');
+        XLSX.writeFile(wb, `مواعيد_PerfectoSmile_${Date.now()}.xlsx`);
+        showToast('✅ تم تصدير Excel بنجاح');
     }
 
     // تصدير PDF
     async function exportToPDF() {
-        if(patients.length === 0) { showToast('لا توجد بيانات', true); return; }
+        if(patients.length === 0) { showToast('⚠️ لا توجد بيانات', true); return; }
         showLoading(true);
         try {
             const today = new Date().toLocaleString('ar-EG');
             let html = `
-                <html dir="rtl"><head><meta charset="UTF-8"><title>تقرير Perfacto Smile</title>
+                <html dir="rtl"><head><meta charset="UTF-8"><title>تقرير Perfecto Smile</title>
                 <style>
                     body { font-family: 'Tahoma', Arial; padding: 20px; }
                     h1 { color: #1e3a5f; text-align: center; }
+                    .logo { text-align: center; margin-bottom: 20px; }
                     .info { text-align: center; margin-bottom: 20px; }
                     table { width: 100%; border-collapse: collapse; }
                     th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
@@ -942,14 +1022,18 @@
                     .footer { text-align: center; margin-top: 20px; font-size: 10px; }
                 </style></head>
                 <body>
-                    <h1>🦷 عيادة Perfacto Smile</h1>
+                    <div class="logo">
+                        <h1>🦷 عيادة Perfecto Smile</h1>
+                        <p>الابتسامة المثالية</p>
+                    </div>
                     <div class="info"><p>تقرير المواعيد - ${today}</p><p>إجمالي المواعيد: ${patients.length}</p></div>
                     <table><thead><tr><th>#</th><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>التاريخ</th><th>الوقت</th><th>الخدمة</th><th>السعر</th><th>المدفوع</th><th>الحالة</th></tr></thead><tbody>`;
             patients.forEach((p, i) => {
                 const statusAr = p.status === 'waiting' ? 'في الانتظار' : (p.status === 'treatment' ? 'قيد العلاج' : 'تم العلاج');
                 html += `<tr><td>${i+1}</td><td>${escapeHtml(p.name)}</td><td>${escapeHtml(p.phone)}</td><td>${escapeHtml(p.doctor)}</td><td>${p.date}</td><td>${p.time}</td><td>${escapeHtml(p.service)}</td><td>${p.price}</td><td>${p.paid}</td><td>${statusAr}</td></tr>`;
             });
-            html += `</tbody></table><div class="footer">تم التصدير من نظام Perfacto Smile</div>
+            html += `</tbody></table>
+                    <div class="footer">تم التصدير من نظام Perfecto Smile - عيادة الابتسامة المثالية</div>
                     <div style="text-align:center; margin-top:20px;"><button onclick="window.print()">🖨️ طباعة</button><button onclick="window.close()">❌ إغلاق</button></div>
                     <script>setTimeout(() => { if(confirm("حفظ التقرير كـ PDF؟")) window.print(); }, 500);<\/script>
                 </body></html>`;
@@ -957,13 +1041,14 @@
             win.document.write(html);
             win.document.close();
             showToast('✅ تم فتح PDF، استخدم الطباعة للحفظ');
-        } catch(e) { showToast('❌ خطأ', true); } finally { showLoading(false); }
+        } catch(e) { showToast('❌ خطأ في إنشاء PDF', true); } finally { showLoading(false); }
     }
 
     function shareWhatsApp() {
-        if(patients.length === 0) { showToast('لا توجد بيانات', true); return; }
-        let msg = "🦷 *عيادة Perfacto Smile*\n📋 *تقرير المواعيد*\n";
-        patients.forEach((p, i) => { msg += `${i+1}. ${p.name} - ${p.phone} - ${p.date}\n`; });
+        if(patients.length === 0) { showToast('⚠️ لا توجد بيانات للمشاركة', true); return; }
+        let msg = "🦷 *عيادة Perfecto Smile*\n📋 *تقرير المواعيد*\n";
+        patients.slice(0, 20).forEach((p, i) => { msg += `${i+1}. ${p.name} - ${p.phone} - ${p.date}\n`; });
+        if(patients.length > 20) msg += `\n... وإجمالي ${patients.length} مريض`;
         window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
         showToast('📱 جاري فتح واتساب');
     }
@@ -1000,7 +1085,15 @@
         document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
     }
 
-    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
+    function escapeHtml(str) { 
+        if(!str) return ''; 
+        return str.replace(/[&<>]/g, function(m) {
+            if(m === '&') return '&amp;';
+            if(m === '<') return '&lt;';
+            if(m === '>') return '&gt;';
+            return m;
+        });
+    }
 
     function setDefaultDate() {
         if(!document.getElementById('appDate').value) document.getElementById('appDate').value = new Date().toISOString().split('T')[0];
@@ -1008,12 +1101,11 @@
     }
 
     setDefaultDate();
-    
-    // التحقق من حالة تسجيل الدخول عند تحميل الصفحة
     checkLoginStatus();
     
-    // Service Worker
-    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(e => console.log('SW error:', e)); }
+    if ('serviceWorker' in navigator) { 
+        navigator.serviceWorker.register('sw.js').catch(e => console.log('SW error:', e)); 
+    }
 </script>
 </body>
 </html>
