@@ -12,9 +12,6 @@
     <meta name="apple-mobile-web-app-title" content="Perfacto Smile">
     <meta name="theme-color" content="#1e3a5f">
     
-    <!-- سياسة أمان المحتوى (CSP) - تمنع تنفيذ أي كود ضار -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://www.gstatic.com https://cdn.sheetjs.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.firebaseapp.com; font-src 'self' https://cdnjs.cloudflare.com; frame-src 'none'; object-src 'none'; base-uri 'self';">
-    
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     
@@ -36,7 +33,6 @@
             font-family: 'Cairo', 'Tahoma', 'Segoe UI', sans-serif;
         }
 
-        /* شاشة تسجيل الدخول */
         .login-container {
             position: fixed;
             top: 0;
@@ -131,12 +127,6 @@
             cursor: pointer;
         }
 
-        /* التطبيق الرئيسي */
-        body {
-            background: #f0f4f8;
-            min-height: 100vh;
-        }
-
         .app-container {
             display: none;
             max-width: 1400px;
@@ -144,7 +134,6 @@
             padding: 20px;
         }
 
-        /* الهيدر */
         .header {
             background: linear-gradient(135deg, #1e3a5f, #2c7da0);
             border-radius: 25px;
@@ -182,7 +171,6 @@
 
         .logout-btn:hover { background: rgba(255,255,255,0.3); }
 
-        /* الإحصائيات */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -204,7 +192,6 @@
         .stat-number { font-size: 32px; font-weight: bold; margin: 10px 0; }
         .stat-label { color: #666; font-size: 13px; }
 
-        /* بطاقات */
         .card {
             background: white;
             border-radius: 25px;
@@ -222,7 +209,6 @@
             margin-bottom: 20px;
         }
 
-        /* نموذج الإضافة */
         .form-row {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -245,7 +231,6 @@
             box-shadow: 0 0 0 3px rgba(44,125,160,0.1);
         }
 
-        /* أزرار */
         .btn {
             padding: 12px 24px;
             border: none;
@@ -275,7 +260,6 @@
             justify-content: center;
         }
 
-        /* البحث */
         .search-bar {
             display: flex;
             flex-wrap: wrap;
@@ -288,7 +272,6 @@
             min-width: 150px;
         }
 
-        /* التبويبات */
         .tabs {
             display: flex;
             gap: 5px;
@@ -313,7 +296,6 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* الجداول */
         .table-wrapper {
             overflow-x: auto;
             border-radius: 15px;
@@ -423,7 +405,6 @@
 </head>
 <body>
 
-<!-- شاشة تسجيل الدخول -->
 <div id="loginContainer" class="login-container">
     <div class="login-box">
         <i class="fas fa-tooth" style="font-size: 60px; color: #2c7da0; margin-bottom: 15px;"></i>
@@ -440,10 +421,7 @@
     </div>
 </div>
 
-<!-- المحتوى الرئيسي -->
 <div id="appContainer" class="app-container">
-
-    <!-- الهيدر -->
     <div class="header">
         <div class="logo">
             <h1><i class="fas fa-tooth"></i> Perfacto Smile</h1>
@@ -455,7 +433,6 @@
         </div>
     </div>
 
-    <!-- الإحصائيات -->
     <div class="stats-grid">
         <div class="stat-card"><i class="fas fa-hourglass-half" style="color:#fd7e14"></i><div class="stat-number waiting" id="waitingCount">0</div><div class="stat-label">في انتظار العلاج</div></div>
         <div class="stat-card"><i class="fas fa-stethoscope" style="color:#2c7da0"></i><div class="stat-number treatment" id="treatmentCount">0</div><div class="stat-label">قيد العلاج</div></div>
@@ -464,7 +441,6 @@
         <div class="stat-card"><i class="fas fa-money-bill-wave" style="color:#fd7e14"></i><div class="stat-number total-money" id="totalMoney">0</div><div class="stat-label">إجمالي المدفوعات (دج)</div></div>
     </div>
 
-    <!-- إضافة مريض جديد -->
     <div class="card">
         <div class="card-title"><i class="fas fa-user-plus"></i> إضافة مريض جديد</div>
         <div class="form-row">
@@ -491,7 +467,6 @@
         </div>
     </div>
 
-    <!-- البحث -->
     <div class="card">
         <div class="card-title"><i class="fas fa-search"></i> بحث متقدم</div>
         <div class="search-bar">
@@ -501,7 +476,6 @@
         </div>
     </div>
 
-    <!-- قائمة المرضى -->
     <div class="card">
         <div class="card-title"><i class="fas fa-list"></i> إدارة المرضى</div>
         
@@ -514,7 +488,7 @@
 
         <div id="tab-waiting" class="tab-content active"><div class="table-wrapper"><table><thead> pro(<th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>ملاحظات</th><th>الإجراءات</th> </tr></thead><tbody id="waitingList"></tbody> </table></div></div>
         <div id="tab-treatment" class="tab-content"><div class="table-wrapper"> <table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>وقت الدخول</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>ملاحظات</th><th>الإجراءات</th> </tr></thead><tbody id="treatmentList"></tbody> </table></div></div>
-        <div id="tab-completed" class="tab-content"><div class="table-wrapper"> <table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>تاريخ العلاج</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>ملاحظات</th><th>الإجراءات</th> </tr></thead><tbody id="completedList"></tbody> </table></div></div>
+        <div id="tab-completed" class="tab-content"><div class="table-wrapper"> <table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>تاريخ العلاج</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>ملاحظات</th><th>الإجراءات</th> <tr></thead><tbody id="completedList"></tbody> </table></div></div>
         <div id="tab-all" class="tab-content"><div class="table-wrapper"> <table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الحالة</th><th>ملاحظات</th><th>الإجراءات</th> </tr></thead><tbody id="allList"></tbody> </table></div></div>
 
         <div class="btn-group" style="margin-top: 20px;">
@@ -525,7 +499,6 @@
     </div>
 </div>
 
-<!-- نافذة الدفع -->
 <div id="paymentModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:10000; justify-content:center; align-items:center;">
     <div style="background:white; border-radius:25px; padding:30px; width:90%; max-width:350px; text-align:center;">
         <h3 style="margin-bottom:15px;">💰 تسجيل الدفع</h3>
@@ -538,71 +511,57 @@
     </div>
 </div>
 
-<!-- شاشة تحميل -->
 <div id="loadingOverlay" class="loading-overlay"><div class="loading-spinner"></div><div class="loading-text" style="color:white; margin-top:15px;">جاري التحضير...</div></div>
 
-<!-- Firebase SDK مع إعدادات أمان محسنة -->
+<!-- Firebase SDK (تم التعديل) -->
+<script type="importmap">
+    {
+        "imports": {
+            "firebase/app": "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js",
+            "firebase/auth": "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js",
+            "firebase/firestore": "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js"
+        }
+    }
+</script>
+
 <script type="module">
-  // منع console.log في الإنتاج (لإخفاء رسائل التصحيح)
-  if (window.location.hostname !== 'localhost') {
-      console.log = function() {};
-      console.info = function() {};
-      console.debug = function() {};
-  }
-  
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
-  import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc, query, where, limit, startAfter } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
-  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, browserSessionPersistence } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
-  
-  // إعدادات Firebase (هذه معلومات عامة وليست سرية)
-  const firebaseConfig = {
-    apiKey: "AIzaSyD1iZPNF6PCLXt-o4ehqp5k7b409X9qatU",
-    authDomain: "perfactosmile-clinic.firebaseapp.com",
-    projectId: "perfactosmile-clinic",
-    storageBucket: "perfactosmile-clinic.firebasestorage.app",
-    messagingSenderId: "763561733402",
-    appId: "1:763561733402:web:1ce9621bdc8924dff3d0a3",
-    measurementId: "G-9JH8DHR1RR"
-  };
-  
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const auth = getAuth(app);
-  
-  // تعيين مدة بقاء الجلسة
-  setPersistence(auth, browserLocalPersistence);
-  
-  // جعل المتغيرات متاحة لباقي الكود
-  window.db = db;
-  window.auth = auth;
-  window.collection = collection;
-  window.addDoc = addDoc;
-  window.getDocs = getDocs;
-  window.updateDoc = updateDoc;
-  window.deleteDoc = deleteDoc;
-  window.doc = doc;
-  window.signInWithEmailAndPassword = signInWithEmailAndPassword;
-  window.signOut = signOut;
-  window.onAuthStateChanged = onAuthStateChanged;
-  
-  console.log("✅ Firebase connected successfully with Authentication!");
+    import { initializeApp } from 'firebase/app';
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence, browserSessionPersistence } from 'firebase/auth';
+    import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'firebase/firestore';
+    
+    const firebaseConfig = {
+        apiKey: "AIzaSyD1iZPNF6PCLXt-o4ehqp5k7b409X9qatU",
+        authDomain: "perfactosmile-clinic.firebaseapp.com",
+        projectId: "perfactosmile-clinic",
+        storageBucket: "perfactosmile-clinic.firebasestorage.app",
+        messagingSenderId: "763561733402",
+        appId: "1:763561733402:web:1ce9621bdc8924dff3d0a3",
+        measurementId: "G-9JH8DHR1RR"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    
+    window.db = db;
+    window.auth = auth;
+    window.collection = collection;
+    window.addDoc = addDoc;
+    window.getDocs = getDocs;
+    window.updateDoc = updateDoc;
+    window.deleteDoc = deleteDoc;
+    window.doc = doc;
+    window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+    window.signOut = signOut;
+    window.onAuthStateChanged = onAuthStateChanged;
+    window.setPersistence = setPersistence;
+    window.browserLocalPersistence = browserLocalPersistence;
+    window.browserSessionPersistence = browserSessionPersistence;
+    
+    console.log("✅ Firebase connected!");
 </script>
 
 <script>
-    // منع الوصول إلى console من أدوات المطور (طبقة حماية إضافية)
-    (function() {
-        const noop = () => {};
-        if (window.location.hostname !== 'localhost') {
-            window.console = window.console || {};
-            const methods = ['log', 'info', 'warn', 'error', 'debug', 'trace'];
-            for (let i = 0; i < methods.length; i++) {
-                if (window.console[methods[i]]) {
-                    window.console[methods[i]] = noop;
-                }
-            }
-        }
-    })();
-    
     let patients = [];
     let currentPatientId = null;
     let searchTerm = "";
@@ -614,19 +573,21 @@
     const MAX_LOGIN_ATTEMPTS = 5;
     const LOCKOUT_MINUTES = 15;
 
-    // ============ نظام تسجيل الدخول مع حماية ضد التخمين ============
-    
     function isLoginLocked() {
         if (loginLockUntil && new Date() < loginLockUntil) {
             const remainingMinutes = Math.ceil((loginLockUntil - new Date()) / 60000);
-            document.getElementById('loginError').innerHTML = `❌ تم قفل تسجيل الدخول لمدة ${remainingMinutes} دقيقة. حاول مرة أخرى لاحقاً.`;
+            document.getElementById('loginError').innerHTML = `❌ تم قفل تسجيل الدخول لمدة ${remainingMinutes} دقيقة.`;
             return true;
         }
         return false;
     }
     
-    // مراقبة حالة تسجيل الدخول
     function initAuthListener() {
+        if (typeof onAuthStateChanged === 'undefined') {
+            console.log("Waiting for Firebase...");
+            setTimeout(initAuthListener, 500);
+            return;
+        }
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
@@ -645,7 +606,6 @@
         });
     }
 
-    // دالة تسجيل الدخول مع حماية ضد التخمين
     async function checkLogin() {
         if (isLoginLocked()) return;
         
@@ -667,7 +627,6 @@
             document.getElementById('loginError').innerHTML = '';
         } catch (error) {
             failedLoginAttempts++;
-            console.error(error);
             let errorMsg = '❌ فشل تسجيل الدخول';
             if (error.code === 'auth/user-not-found') errorMsg = '❌ المستخدم غير موجود';
             else if (error.code === 'auth/wrong-password') errorMsg = '❌ كلمة السر غير صحيحة';
@@ -685,7 +644,6 @@
         }
     }
 
-    // دالة تسجيل الخروج
     async function logout() {
         showLoading(true);
         try {
@@ -697,16 +655,12 @@
             showLoading(false);
         }
     }
-
-    // ============ حفظ وتحميل البيانات من Firebase مع التحقق من الأذونات ============
     
     async function loadData() {
         if (!window.db || !currentUser) return;
-        
         showLoading(true);
         try {
-            const q = query(collection(db, "patients"));
-            const querySnapshot = await getDocs(q);
+            const querySnapshot = await getDocs(collection(db, "patients"));
             patients = [];
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
@@ -716,12 +670,8 @@
             renderAll();
             showToast('✅ تم تحميل البيانات من السحاب');
         } catch (error) {
-            console.error("Error loading data:", error);
-            if (error.code === 'permission-denied') {
-                showToast('❌ ليس لديك صلاحية للوصول إلى البيانات', true);
-            } else {
-                showToast('❌ خطأ في تحميل البيانات', true);
-            }
+            console.error(error);
+            showToast('❌ خطأ في تحميل البيانات', true);
         } finally {
             showLoading(false);
         }
@@ -729,7 +679,6 @@
 
     async function saveData() {
         if (!window.db || !currentUser) return;
-        
         showLoading(true);
         try {
             for (const patient of patients) {
@@ -767,18 +716,13 @@
             renderAll();
             showToast('✅ تم حفظ البيانات في السحاب');
         } catch (error) {
-            console.error("Error saving data:", error);
-            if (error.code === 'permission-denied') {
-                showToast('❌ ليس لديك صلاحية لحفظ البيانات', true);
-            } else {
-                showToast('❌ خطأ في حفظ البيانات', true);
-            }
+            console.error(error);
+            showToast('❌ خطأ في حفظ البيانات', true);
         } finally {
             showLoading(false);
         }
     }
 
-    // ============ إضافة مريض مع تنظيف المدخلات ============
     function sanitizeInput(str) {
         if (!str) return '';
         return str.replace(/[<>]/g, '').substring(0, 500);
@@ -803,7 +747,6 @@
         if(!date) date = new Date().toISOString().split('T')[0];
         if(!time) time = '09:00';
         
-        // التحقق من صحة رقم الهاتف (أرقام فقط، 9-15 رقم)
         const phoneRegex = /^[0-9]{9,15}$/;
         if (!phoneRegex.test(phone.replace(/[+\s-]/g, ''))) {
             showToast('⚠️ رقم الهاتف يجب أن يحتوي على 9-15 رقم فقط', true);
@@ -831,11 +774,6 @@
         showToast(`✅ تم إضافة المريض ${name}`);
     }
 
-    // باقي الدوال (openPaymentModal, confirmPayment, startTreatment, completeTreatment, reopenPatient, deletePatient, filterPatients, resetSearch, renderAll, updateStats, exportToExcel, exportToPDF, shareWhatsApp, switchTab, clearForm, showToast, showLoading, escapeHtml, setDefaultDate)
-    // ... (نفس الدوال السابقة مع تحسينات الأمان)
-    
-    // ============ الدوال المساعدة الأساسية ============
-    
     function openPaymentModal(id) {
         currentPatientId = id;
         const p = patients.find(p => p.id === id);
@@ -964,7 +902,7 @@
                 </td>
             </tr>
         `).join('');
-        document.getElementById(elementId).innerHTML = html || '<tr><td colspan="9" style="text-align:center;">لا توجد بيانات</td></tr>';
+        document.getElementById(elementId).innerHTML = html || '<tr><td colspan="9" style="text-align:center;">لا توجد بيانات</td><\/tr>';
     }
 
     function renderAllList() {
@@ -994,7 +932,7 @@
                 </td>
             </tr>
         `).join('');
-        document.getElementById('allList').innerHTML = html || '<tr><td colspan="10" style="text-align:center;">لا توجد بيانات</td></tr>';
+        document.getElementById('allList').innerHTML = html || '<tr><td colspan="10" style="text-align:center;">لا توجد بيانات</td><\/tr>';
     }
 
     function updateStats() {
@@ -1105,11 +1043,8 @@
     }
 
     setDefaultDate();
-    
-    // بدء الاستماع لحالة تسجيل الدخول
     initAuthListener();
     
-    // Service Worker
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(e => console.log('SW error:', e)); }
 </script>
 </body>
