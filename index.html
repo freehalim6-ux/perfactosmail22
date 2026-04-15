@@ -24,8 +24,8 @@
         .login-box button { width: 100%; padding: 15px; background: #2c7da0; color: white; border: none; border-radius: 15px; font-size: 18px; cursor: pointer; }
         .login-error { color: red; margin-top: 10px; }
         .app-container { display: none; max-width: 1400px; margin: auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #1e3a5f, #2c7da0); border-radius: 25px; padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .stats-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin-bottom: 20px; }
+        .header { background: linear-gradient(135deg, #1e3a5f, #2c7da0); border-radius: 25px; padding: 20px; color: white; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .stat-card { background: white; border-radius: 20px; padding: 20px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
         .stat-number { font-size: 32px; font-weight: bold; color: #1e3a5f; }
         .card { background: white; border-radius: 25px; padding: 20px; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
@@ -39,10 +39,10 @@
         .btn-info { background: #17a2b8; color: white; }
         .btn-warning { background: #fd7e14; color: white; }
         .btn-secondary { background: #6c757d; color: white; }
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; justify-content: center; }
         .search-bar { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
         .search-bar input { flex: 1; padding: 12px; border: 2px solid #e0e0e0; border-radius: 12px; }
-        .tabs { display: flex; gap: 5px; border-bottom: 2px solid #e0e0e0; margin-bottom: 15px; }
+        .tabs { display: flex; gap: 5px; border-bottom: 2px solid #e0e0e0; margin-bottom: 15px; flex-wrap: wrap; }
         .tab { padding: 10px 20px; cursor: pointer; border-radius: 12px 12px 0 0; }
         .tab.active { background: #2c7da0; color: white; }
         .tab-content { display: none; }
@@ -52,12 +52,13 @@
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid #e0e0e0; }
         th { background: #f0f8fc; color: #1e3a5f; }
         .action-btn { padding: 5px 10px; margin: 2px; border: none; border-radius: 8px; cursor: pointer; }
+        .payment-paid { background: #d4edda; color: #28a745; padding: 4px 8px; border-radius: 8px; }
         .toast { position: fixed; bottom: 20px; left: 20px; right: 20px; background: #28a745; color: white; padding: 12px; border-radius: 12px; text-align: center; z-index: 9999; max-width: 400px; margin: auto; }
         .toast.error { background: #dc3545; }
-        .loading { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 10000; }
+        .loading { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); display: none; justify-content: center; align-items: center; z-index: 10000; flex-direction: column; }
         .loading .spinner { width: 50px; height: 50px; border: 5px solid white; border-top-color: #2c7da0; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
-        @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } th, td { font-size: 12px; padding: 8px; } }
     </style>
 </head>
 <body>
@@ -102,39 +103,40 @@
             <input type="number" id="price" placeholder="السعر">
         </div>
         <div class="form-row"><textarea id="notes" rows="2" placeholder="ملاحظات"></textarea></div>
-        <button class="btn btn-primary" onclick="addPatient()">حفظ</button>
+        <button class="btn btn-primary" onclick="addPatient()">حفظ المريض</button>
     </div>
 
     <div class="card">
-        <div class="card-title">🔍 بحث</div>
+        <div class="card-title">🔍 بحث متقدم</div>
         <div class="search-bar">
-            <input type="text" id="searchText" placeholder="بحث...">
+            <input type="text" id="searchText" placeholder="بحث بالاسم أو الهاتف...">
             <input type="date" id="searchDate">
             <button class="btn btn-secondary" onclick="resetSearch()">إعادة تعيين</button>
         </div>
     </div>
 
     <div class="card">
-        <div class="card-title">📋 المرضى</div>
+        <div class="card-title">📋 إدارة المرضى</div>
         <div class="tabs">
-            <div class="tab active" onclick="switchTab('waiting')">في الانتظار</div>
-            <div class="tab" onclick="switchTab('treatment')">قيد العلاج</div>
-            <div class="tab" onclick="switchTab('completed')">تم العلاج</div>
-            <div class="tab" onclick="switchTab('all')">الكل</div>
+            <div class="tab active" onclick="switchTab('waiting')">🕐 في الانتظار</div>
+            <div class="tab" onclick="switchTab('treatment')">⚕️ قيد العلاج</div>
+            <div class="tab" onclick="switchTab('completed')">✅ تم العلاج</div>
+            <div class="tab" onclick="switchTab('all')">📋 الكل</div>
         </div>
-        <div id="tab-waiting" class="tab-content active"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>التاريخ</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th></tr></thead><tbody id="waitingList"></tbody></table></div></div>
-        <div id="tab-treatment" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>تاريخ البدء</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th></tr></thead><tbody id="treatmentList"></tbody></table></div></div>
-        <div id="tab-completed" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>تاريخ الانتهاء</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th></tr></thead><tbody id="completedList"></tbody></table></div></div>
-        <div id="tab-all" class="tab-content"><div class="table-wrapper"><table><thead><tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>التاريخ</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الحالة</th><th>الإجراءات</th></tr></thead><tbody id="allList"></tbody></table></div></div>
-        <div class="btn-group"><button class="btn btn-success" onclick="exportExcel()">Excel</button><button class="btn btn-info" onclick="shareWhatsApp()">واتساب</button></div>
+        <div id="tab-waiting" class="tab-content active"><div class="table-wrapper"><table><thead> pro(<th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th> </tr></thead><tbody id="waitingList"></tbody> </table></div></div>
+        <div id="tab-treatment" class="tab-content"><div class="table-wrapper"> <table><thead> <tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>وقت الدخول</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th> </tr></thead><tbody id="treatmentList"></tbody> </table></div></div>
+        <div id="tab-completed" class="tab-content"><div class="table-wrapper"> <table><thead> <tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>تاريخ العلاج</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الإجراءات</th> </tr></thead><tbody id="completedList"></tbody> </table></div></div>
+        <div id="tab-all" class="tab-content"><div class="table-wrapper"> <table><thead> <tr><th>المريض</th><th>الهاتف</th><th>الطبيب</th><th>الموعد</th><th>الخدمة</th><th>السعر</th><th>الدفع</th><th>الحالة</th><th>الإجراءات</th> </tr></thead><tbody id="allList"></tbody> </table></div></div>
+        <div class="btn-group"><button class="btn btn-success" onclick="exportExcel()"><i class="fas fa-file-excel"></i> Excel</button><button class="btn btn-info" onclick="shareWhatsApp()"><i class="fab fa-whatsapp"></i> واتساب</button></div>
     </div>
 </div>
 
-<div id="paymentModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:10000; justify-content:center; align-items:center;"><div style="background:white; border-radius:20px; padding:30px; width:90%; max-width:350px;"><h3>💰 الدفع</h3><div id="paymentInfo"></div><input type="number" id="paymentAmount" placeholder="المبلغ" style="width:100%; padding:10px; margin:15px 0;"><div class="btn-group"><button class="btn btn-success" onclick="confirmPayment()">تأكيد</button><button class="btn btn-secondary" onclick="closePaymentModal()">إلغاء</button></div></div></div>
+<div id="paymentModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:10000; justify-content:center; align-items:center;"><div style="background:white; border-radius:20px; padding:30px; width:90%; max-width:350px;"><h3>💰 تسجيل الدفع</h3><div id="paymentInfo"></div><input type="number" id="paymentAmount" placeholder="المبلغ" style="width:100%; padding:10px; margin:15px 0;"><div class="btn-group"><button class="btn btn-success" onclick="confirmPayment()">تأكيد</button><button class="btn btn-secondary" onclick="closePaymentModal()">إلغاء</button></div></div></div>
 
-<div id="loading" class="loading"><div class="spinner"></div></div>
+<div id="loading" class="loading"><div class="spinner"></div><div style="color:white; margin-top:15px;">جاري التحميل...</div></div>
 
 <script type="module">
+    // استيراد Firebase
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
     import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js';
     import { getFirestore, collection, addDoc, getDocs, updateDoc, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js';
@@ -152,6 +154,7 @@
     const db = getFirestore(app);
     const auth = getAuth(app);
     
+    // جعل الدوال متاحة للكود العادي
     window.db = db;
     window.auth = auth;
     window.collection = collection;
@@ -164,7 +167,7 @@
     window.signOut = signOut;
     window.onAuthStateChanged = onAuthStateChanged;
     
-    console.log("Firebase ready");
+    console.log("✅ Firebase ready");
 </script>
 
 <script>
@@ -173,7 +176,6 @@
     let currentPatientId = null;
     let searchText = "";
     let searchDate = "";
-    let currentTab = "waiting";
     const STATUS = { WAITING: 'waiting', TREATMENT: 'treatment', COMPLETED: 'completed' };
     
     function showToast(msg, isError = false) {
@@ -188,7 +190,8 @@
         document.getElementById('loading').style.display = show ? 'flex' : 'none';
     }
     
-    async function login() {
+    // ============ تسجيل الدخول ============
+    window.login = async function() {
         const email = document.getElementById('loginEmail').value.trim();
         const password = document.getElementById('loginPassword').value;
         if (!email || !password) {
@@ -200,16 +203,28 @@
             await signInWithEmailAndPassword(auth, email, password);
             document.getElementById('loginError').innerHTML = '';
         } catch (error) {
-            document.getElementById('loginError').innerHTML = '❌ ' + (error.code === 'auth/user-not-found' ? 'المستخدم غير موجود' : 'كلمة السر غير صحيحة');
+            console.error(error);
+            let msg = '❌ فشل تسجيل الدخول';
+            if (error.code === 'auth/user-not-found') msg = '❌ المستخدم غير موجود';
+            else if (error.code === 'auth/wrong-password') msg = '❌ كلمة السر غير صحيحة';
+            else if (error.code === 'auth/invalid-email') msg = '❌ البريد الإلكتروني غير صحيح';
+            document.getElementById('loginError').innerHTML = msg;
         }
         showLoading(false);
-    }
+    };
     
-    async function logout() {
-        await signOut(auth);
-        showToast('تم تسجيل الخروج');
-    }
+    window.logout = async function() {
+        showLoading(true);
+        try {
+            await signOut(auth);
+            showToast('✅ تم تسجيل الخروج');
+        } catch (error) {
+            console.error(error);
+        }
+        showLoading(false);
+    };
     
+    // ============ تحميل وحفظ البيانات ============
     async function loadPatients() {
         if (!db || !currentUser) return;
         showLoading(true);
@@ -224,16 +239,16 @@
             renderAll();
         } catch (error) {
             console.error(error);
-            showToast('خطأ في تحميل البيانات: ' + error.message, true);
+            showToast('❌ خطأ في تحميل البيانات: ' + error.message, true);
         }
         showLoading(false);
     }
     
-    async function addPatient() {
-        if (!currentUser) { showToast('الرجاء تسجيل الدخول', true); return; }
+    window.addPatient = async function() {
+        if (!currentUser) { showToast('الرجاء تسجيل الدخول أولاً', true); return; }
         const name = document.getElementById('name').value.trim();
         const phone = document.getElementById('phone').value.trim();
-        if (!name || !phone) { showToast('الاسم والهاتف مطلوبان', true); return; }
+        if (!name || !phone) { showToast('❌ الاسم والهاتف مطلوبان', true); return; }
         const date = document.getElementById('date').value || new Date().toISOString().split('T')[0];
         const time = document.getElementById('time').value || '10:00';
         const patient = {
@@ -257,26 +272,28 @@
             document.getElementById('price').value = '';
             document.getElementById('notes').value = '';
         } catch (error) {
-            showToast('خطأ: ' + error.message, true);
+            console.error(error);
+            showToast('❌ خطأ: ' + error.message, true);
         }
         showLoading(false);
-    }
+    };
     
-    async function deletePatient(id) {
-        if (!confirm('هل تريد حذف هذا المريض نهائياً؟')) return;
+    window.deletePatient = async function(id) {
+        if (!confirm('⚠️ هل تريد حذف هذا المريض نهائياً؟')) return;
         showLoading(true);
         try {
             await deleteDoc(doc(db, "patients", id));
             patients = patients.filter(p => p.id !== id);
             renderAll();
-            showToast('✅ تم الحذف');
+            showToast('🗑️ تم حذف المريض');
         } catch (error) {
-            showToast('خطأ: ' + error.message, true);
+            console.error(error);
+            showToast('❌ خطأ: ' + error.message, true);
         }
         showLoading(false);
-    }
+    };
     
-    async function startTreatment(id) {
+    window.startTreatment = async function(id) {
         const p = patients.find(p => p.id === id);
         if (p) {
             p.status = STATUS.TREATMENT;
@@ -286,12 +303,12 @@
                 await updateDoc(doc(db, "patients", id), { status: STATUS.TREATMENT, treatmentStartTime: p.treatmentStartTime });
                 renderAll();
                 showToast('⚕️ بدء العلاج');
-            } catch (error) { showToast('خطأ: ' + error.message, true); }
+            } catch (error) { showToast('❌ خطأ: ' + error.message, true); }
             showLoading(false);
         }
-    }
+    };
     
-    async function completeTreatment(id) {
+    window.completeTreatment = async function(id) {
         const p = patients.find(p => p.id === id);
         if (p) {
             p.status = STATUS.COMPLETED;
@@ -301,12 +318,12 @@
                 await updateDoc(doc(db, "patients", id), { status: STATUS.COMPLETED, treatmentEndTime: p.treatmentEndTime });
                 renderAll();
                 showToast('✅ تم إكمال العلاج');
-            } catch (error) { showToast('خطأ: ' + error.message, true); }
+            } catch (error) { showToast('❌ خطأ: ' + error.message, true); }
             showLoading(false);
         }
-    }
+    };
     
-    async function reopenPatient(id) {
+    window.reopenPatient = async function(id) {
         const p = patients.find(p => p.id === id);
         if (p) {
             p.status = STATUS.WAITING;
@@ -317,22 +334,22 @@
                 await updateDoc(doc(db, "patients", id), { status: STATUS.WAITING, treatmentStartTime: null, treatmentEndTime: null });
                 renderAll();
                 showToast('🔄 أعيد للانتظار');
-            } catch (error) { showToast('خطأ: ' + error.message, true); }
+            } catch (error) { showToast('❌ خطأ: ' + error.message, true); }
             showLoading(false);
         }
-    }
+    };
     
-    function openPaymentModal(id) {
+    window.openPaymentModal = function(id) {
         currentPatientId = id;
         const p = patients.find(p => p.id === id);
         if (p) {
-            document.getElementById('paymentInfo').innerHTML = `<p>${p.name} - ${p.service}<br>السعر: ${p.price} - المدفوع: ${p.paid} - المتبقي: ${p.price - p.paid}</p>`;
+            document.getElementById('paymentInfo').innerHTML = `<p><strong>${escapeHtml(p.name)}</strong><br>الخدمة: ${escapeHtml(p.service)}<br>السعر: ${p.price} دج<br>المدفوع: ${p.paid} دج<br>المتبقي: ${p.price - p.paid} دج</p>`;
             document.getElementById('paymentAmount').value = p.price - p.paid;
             document.getElementById('paymentModal').style.display = 'flex';
         }
-    }
+    };
     
-    async function confirmPayment() {
+    window.confirmPayment = async function() {
         const amount = parseInt(document.getElementById('paymentAmount').value) || 0;
         const p = patients.find(p => p.id === currentPatientId);
         if (p) {
@@ -342,17 +359,17 @@
             try {
                 await updateDoc(doc(db, "patients", p.id), { paid: p.paid, isPaid: p.isPaid });
                 renderAll();
-                showToast(`💰 تم دفع ${amount}`);
-            } catch (error) { showToast('خطأ: ' + error.message, true); }
+                showToast(`💰 تم دفع ${amount} دج`);
+            } catch (error) { showToast('❌ خطأ: ' + error.message, true); }
             showLoading(false);
         }
         closePaymentModal();
-    }
+    };
     
-    function closePaymentModal() {
+    window.closePaymentModal = function() {
         document.getElementById('paymentModal').style.display = 'none';
         currentPatientId = null;
-    }
+    };
     
     function filterPatients() {
         searchText = document.getElementById('searchText').value.toLowerCase();
@@ -360,17 +377,17 @@
         renderAll();
     }
     
-    function resetSearch() {
+    window.resetSearch = function() {
         document.getElementById('searchText').value = '';
         document.getElementById('searchDate').value = '';
         searchText = '';
         searchDate = '';
         renderAll();
-    }
+    };
     
     function filterList(list) {
         return list.filter(p => {
-            const matchText = searchText === '' || p.name.toLowerCase().includes(searchText) || p.phone.includes(searchText) || p.doctor.toLowerCase().includes(searchText);
+            const matchText = searchText === '' || p.name.toLowerCase().includes(searchText) || (p.phone && p.phone.includes(searchText)) || (p.doctor && p.doctor.toLowerCase().includes(searchText));
             const matchDate = searchDate === '' || p.date === searchDate;
             return matchText && matchDate;
         });
@@ -393,19 +410,19 @@
     function renderList(elementId, list, type) {
         const html = list.map(p => `
             <tr>
-                <td>${escapeHtml(p.name)}<br><small>${escapeHtml(p.service)}</small></td>
-                <td>${escapeHtml(p.phone)}</td>
+                <td><b>${escapeHtml(p.name)}</b><br><small>${escapeHtml(p.service)}</small></td>
+                <td dir="ltr">${escapeHtml(p.phone)}</td>
                 <td>${escapeHtml(p.doctor)}</td>
                 <td>${type === 'treatment' ? (p.treatmentStartTime ? new Date(p.treatmentStartTime).toLocaleString() : '—') : (p.date + ' ' + p.time)}</td>
                 <td>${escapeHtml(p.service)}</td>
                 <td>${p.price} دج</td>
                 <td><span class="${p.isPaid ? 'payment-paid' : ''}">${p.isPaid ? '✅ مدفوع' : '❌ غير مدفوع'}<br>${p.paid}/${p.price}</span></td>
                 <td>
-                    ${type === 'waiting' ? `<button class="action-btn btn-primary" onclick="startTreatment('${p.id}')">بدء</button>` : ''}
-                    ${type === 'treatment' ? `<button class="action-btn btn-success" onclick="completeTreatment('${p.id}')">إنهاء</button>` : ''}
-                    ${type === 'completed' ? `<button class="action-btn btn-warning" onclick="reopenPatient('${p.id}')">إعادة</button>` : ''}
-                    <button class="action-btn btn-info" onclick="openPaymentModal('${p.id}')">دفع</button>
-                    <button class="action-btn btn-danger" onclick="deletePatient('${p.id}')">حذف</button>
+                    ${type === 'waiting' ? `<button class="action-btn btn-primary" onclick="startTreatment('${p.id}')">▶️ بدء</button>` : ''}
+                    ${type === 'treatment' ? `<button class="action-btn btn-success" onclick="completeTreatment('${p.id}')">✅ إنهاء</button>` : ''}
+                    ${type === 'completed' ? `<button class="action-btn btn-warning" onclick="reopenPatient('${p.id}')">🔄 إعادة</button>` : ''}
+                    <button class="action-btn btn-info" onclick="openPaymentModal('${p.id}')">💰 دفع</button>
+                    <button class="action-btn btn-danger" onclick="deletePatient('${p.id}')">🗑️</button>
                 </td>
             </tr>
         `).join('');
@@ -413,62 +430,75 @@
     }
     
     function renderAllList(list) {
-        const statusText = { waiting: 'في الانتظار', treatment: 'قيد العلاج', completed: 'تم العلاج' };
+        const statusText = { waiting: '<span class="status-badge status-waiting">🕐 في الانتظار</span>', treatment: '<span class="status-badge status-treatment">⚕️ قيد العلاج</span>', completed: '<span class="status-badge status-completed">✅ تم العلاج</span>' };
         const html = list.map(p => `
             <tr>
-                <td>${escapeHtml(p.name)}<br><small>${escapeHtml(p.service)}</small></td>
-                <td>${escapeHtml(p.phone)}</td>
+                <td><b>${escapeHtml(p.name)}</b><br><small>${escapeHtml(p.service)}</small></td>
+                <td dir="ltr">${escapeHtml(p.phone)}</td>
                 <td>${escapeHtml(p.doctor)}</td>
                 <td>${p.date} ${p.time}</td>
                 <td>${escapeHtml(p.service)}</td>
                 <td>${p.price} دج</td>
-                <td>${p.isPaid ? 'مدفوع' : 'غير مدفوع'}<br>${p.paid}/${p.price}</td>
-                <td>${statusText[p.status]}</td>
+                <td><span class="${p.isPaid ? 'payment-paid' : ''}">${p.isPaid ? 'مدفوع' : 'غير مدفوع'}<br>${p.paid}/${p.price}</span></td>
+                <td>${statusText[p.status] || p.status}</td>
                 <td>
-                    ${p.status === 'waiting' ? `<button class="action-btn btn-primary" onclick="startTreatment('${p.id}')">بدء</button>` : ''}
-                    ${p.status === 'treatment' ? `<button class="action-btn btn-success" onclick="completeTreatment('${p.id}')">إنهاء</button>` : ''}
-                    ${p.status === 'completed' ? `<button class="action-btn btn-warning" onclick="reopenPatient('${p.id}')">إعادة</button>` : ''}
-                    <button class="action-btn btn-info" onclick="openPaymentModal('${p.id}')">دفع</button>
-                    <button class="action-btn btn-danger" onclick="deletePatient('${p.id}')">حذف</button>
+                    ${p.status === 'waiting' ? `<button class="action-btn btn-primary" onclick="startTreatment('${p.id}')">▶️</button>` : ''}
+                    ${p.status === 'treatment' ? `<button class="action-btn btn-success" onclick="completeTreatment('${p.id}')">✅</button>` : ''}
+                    ${p.status === 'completed' ? `<button class="action-btn btn-warning" onclick="reopenPatient('${p.id}')">🔄</button>` : ''}
+                    <button class="action-btn btn-info" onclick="openPaymentModal('${p.id}')">💰</button>
+                    <button class="action-btn btn-danger" onclick="deletePatient('${p.id}')">🗑️</button>
                 </td>
             </tr>
         `).join('');
         document.getElementById('allList').innerHTML = html || '<tr><td colspan="9">لا توجد بيانات</td></tr>';
     }
     
-    function switchTab(tab) {
-        currentTab = tab;
+    window.switchTab = function(tab) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
         document.getElementById(`tab-${tab}`).classList.add('active');
-        event.target.classList.add('active');
-    }
+        const map = { waiting: 0, treatment: 1, completed: 2, all: 3 };
+        const tabs = document.querySelectorAll('.tab');
+        if (tabs[map[tab]]) tabs[map[tab]].classList.add('active');
+    };
     
-    function exportExcel() {
+    window.exportExcel = function() {
         if (patients.length === 0) { showToast('لا توجد بيانات', true); return; }
-        const data = patients.map(p => ({ 'الاسم': p.name, 'الهاتف': p.phone, 'الطبيب': p.doctor, 'التاريخ': p.date, 'الخدمة': p.service, 'السعر': p.price, 'المدفوع': p.paid }));
+        const data = patients.map(p => ({ 'اسم المريض': p.name, 'رقم الهاتف': p.phone, 'الطبيب': p.doctor, 'التاريخ': p.date, 'الخدمة': p.service, 'السعر': p.price, 'المدفوع': p.paid }));
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'المرضى');
-        XLSX.writeFile(wb, `مواعيد_${Date.now()}.xlsx`);
-    }
+        XLSX.writeFile(wb, `مواعيد_Perfacto_${Date.now()}.xlsx`);
+        showToast('✅ تم تصدير Excel');
+    };
     
-    function shareWhatsApp() {
+    window.shareWhatsApp = function() {
         if (patients.length === 0) { showToast('لا توجد بيانات', true); return; }
-        let msg = "تقرير العيادة:\n";
-        patients.forEach((p, i) => msg += `${i+1}. ${p.name} - ${p.phone}\n`);
+        let msg = "🦷 *عيادة Perfacto Smile*\n📋 *تقرير المواعيد*\n";
+        patients.forEach((p, i) => { msg += `${i+1}. ${p.name} - ${p.phone}\n`; });
         window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-    }
+        showToast('📱 جاري فتح واتساب');
+    };
     
     function escapeHtml(str) { if (!str) return ''; return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : (m === '<' ? '&lt;' : '&gt;')); }
     
-    // Auth listener
+    // إعدادات أولية
+    if (!document.getElementById('date').value) {
+        document.getElementById('date').value = new Date().toISOString().split('T')[0];
+        document.getElementById('time').value = '10:00';
+    }
+    
+    document.getElementById('searchText').addEventListener('keyup', filterPatients);
+    document.getElementById('searchDate').addEventListener('change', filterPatients);
+    
+    // ============ مراقبة حالة تسجيل الدخول ============
     onAuthStateChanged(auth, async (user) => {
+        console.log("Auth state changed:", user ? "logged in" : "logged out");
         if (user) {
             currentUser = user;
             document.getElementById('loginContainer').style.display = 'none';
             document.getElementById('appContainer').style.display = 'block';
-            document.getElementById('userEmail').innerText = user.email;
+            document.getElementById('userEmail').innerHTML = `<i class="fas fa-user"></i> ${user.email}`;
             await loadPatients();
         } else {
             currentUser = null;
@@ -477,16 +507,6 @@
             patients = [];
         }
     });
-    
-    // Set default date
-    if (!document.getElementById('date').value) {
-        document.getElementById('date').value = new Date().toISOString().split('T')[0];
-        document.getElementById('time').value = '10:00';
-    }
-    
-    // Search listeners
-    document.getElementById('searchText').addEventListener('keyup', filterPatients);
-    document.getElementById('searchDate').addEventListener('change', filterPatients);
 </script>
 </body>
 </html>
